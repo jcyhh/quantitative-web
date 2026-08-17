@@ -10,6 +10,8 @@
 
 核心约束：遵守 Feature-Sliced Design（FSD）的 `app → pages → widgets → features → entities → shared` 分层依赖；业务 slice 仅经根目录 `index.ts` 暴露公共 API；`app` 与 `shared` 使用技术 segments，不按业务 slice 划分。LocalStorage 与 SessionStorage 只能通过 `shared/lib/storage` 访问，违规会阻断 lint 和 build。
 
+包管理器唯一使用 pnpm `10.28.2`。所有项目命令必须使用 `pnpm` 或 `pnpm run`；禁止 npm、yarn、npx、bun。`scripts/enforce-pnpm.mjs` 会阻断错误执行器以及 `package-lock.json`、`yarn.lock` 等非 pnpm 锁文件。新增运行时依赖使用 `pnpm add`，构建/测试依赖使用 `pnpm add -D`，并在同一提交更新 `package.json`、`pnpm-lock.yaml`、文档与 CI；禁止手改 lockfile 或忽略其他锁文件。依赖安装脚本默认不执行；只有 `pnpm-workspace.yaml` 的 `onlyBuiltDependencies` 中已审查的精确包名才能运行。新增白名单必须记录用途和风险，并只用 `pnpm approve-builds <包名>` 审批，禁止全量批准。
+
 TypeScript 使用 strict 模式：禁止 `any`、非空断言和无校验的外部数据断言；所有具名函数与类方法必须标注返回类型。对象契约使用 `interface`，联合/映射/泛型组合使用 `type`；请求 DTO、领域模型与 UI Props 必须分层定义。完整规则见 [TypeScript 规范](./docs/typescript-standards.md)。
 
 测试按模块与可验证行为就近组织，不按页面数量创建。公式、解析、状态转换、公共能力和缺陷修复必须补同目录单元测试；纯页面组合或静态布局通常不测。当前仅支持 `.test.ts` 基础测试，组件交互与 E2E 出现真实需求后再独立立项，详见 [测试规范](./docs/testing-standards.md)。
@@ -28,7 +30,7 @@ TypeScript 使用 strict 模式：禁止 `any`、非空断言和无校验的外�
 
 高频工具类只使用 `_utilities.scss` 中以 `tld-` 开头的受控能力。允许布局、间距、字号、文本流、Safe Area 等中性工具；禁止颜色、主题、阴影、业务状态和组件外观工具类。`tld-gap-*` 是 CSS 间隙，`tld-spacer-*` 才是占位块；复杂视觉必须回到模块 `*.module.scss`。
 
-`npm run lint` 会运行 Stylelint 并阻断重复实现已有 `tld-*` Utility 的确定等价声明。禁止添加 `stylelint-disable` 或将新样式加入 `stylelint.config.mjs` 的 `legacyStyleFiles`；确需新通用能力时，先扩展 Utility、文档与 lint 映射。
+`pnpm run lint` 会运行 Stylelint 并阻断重复实现已有 `tld-*` Utility 的确定等价声明。禁止添加 `stylelint-disable` 或将新样式加入 `stylelint.config.mjs` 的 `legacyStyleFiles`；确需新通用能力时，先扩展 Utility、文档与 lint 映射。
 
 后续 CSS/SCSS class 名统一使用小写短横线（kebab-case），如 `tld-button`、`strategy-card-header`、`is-active`；禁止 camelCase、PascalCase、下划线和无分隔缩写。CSS Modules 用 `styles['class-name']` 访问；全局 Utility 和需被 VS Code 扫描的 class 使用字面量 className。既有初始代码不做无行为变化的迁移。
 
@@ -52,7 +54,7 @@ Hook 不允许集中堆入 `src/hooks`。按 FSD 归属到对应业务 slice 的
 
 `shared/lib` 也不得创建万能 `utils`：数值展示、十进制运算、普通数值运算、时间、存储、下载分别使用 `format`、`decimal`、`number`、`time`、`storage`、`download` 的目录根入口。金融和业务数值的加减乘除必须经 `shared/lib/decimal`，禁止业务模块直接导入 `decimal.js`；输入/输出优先用字符串。`shared/lib/number` 仅限 UI 几何和动画等非金融数值。收益、回撤、手续费、仓位等业务公式仍须按领域明确单位、精度、舍入与边界后留在 `entities` 或 `features`，并补测试。
 
-私有 `.ts`/`.tsx` 禁止写原始 `+`、`-`、`*`、`/`、复合赋值、`++`、`--`；`npm run lint:arithmetic` 会以 AST 检查阻断。只有 `shared/lib/decimal` 和 `shared/lib/number` 可以实现这些运算，其他模块必须导入对应公共方法；文本拼接改用模板字符串，禁止增加豁免。
+私有 `.ts`/`.tsx` 禁止写原始 `+`、`-`、`*`、`/`、复合赋值、`++`、`--`；`pnpm run lint:arithmetic` 会以 AST 检查阻断。只有 `shared/lib/decimal` 和 `shared/lib/number` 可以实现这些运算，其他模块必须导入对应公共方法；文本拼接改用模板字符串，禁止增加豁免。
 
 复制文本只通过 `shared/lib/clipboard` 的 `await copyText`，底层固定使用哇学社已上线验证的 `copy-to-clipboard`。禁止业务模块直接导入该库或自行调用原生 Clipboard API；调用方根据真实布尔结果显示本地化反馈。
 
@@ -60,8 +62,8 @@ Hook 不允许集中堆入 `src/hooks`。按 FSD 归属到对应业务 slice 的
 
 日期与时间原生 API 只允许在 `shared/lib/time` 实现：业务和私有模块禁止使用 `Date`（含 `new Date`、`Date.now`、`Date.parse`）及 `Intl.DateTimeFormat`，Oxlint 会阻断。需新增时间能力时，先扩展 `shared/lib/time` 并经其 `index.ts` 导出，禁止添加 lint 忽略；普通定时器用于请求超时或资源回收不属于本规则。
 
-主题是强制约束：组件 SCSS 禁止写任何颜色值，必须使用 `_tokens.scss` 定义的语义 `--color-*` token。主题名统一在 `shared/config/theme.ts` 注册，主题应用与持久化只经 `shared/theme`，存储键只经 `sharedConfig.storageKeys.theme`。新增主题必须完整定义 token、补充中英文名称并验证已有页面；禁止在业务组件中判断 `dark` / `light` 或散落主题颜色。主题切换动画统一调用 `useThemeTransition`，禁止组件直接操作 `document.startViewTransition` 或根节点主题属性。
+主题是强制约束：组件 SCSS 禁止写任何颜色值，必须使用语义 `--color-*` token。所有主题固定不变的颜色只登记在 `src/app/styles/_colors.scss`，并使用 `--color-static-*`；随主题变化的语义色只登记在 `_tokens.scss`。主题名统一在 `shared/config/theme.ts` 注册，主题应用与持久化只经 `shared/theme`，存储键只经 `sharedConfig.storageKeys.theme`。新增主题必须完整定义 token、补充中英文名称并验证已有页面；禁止在业务组件中判断 `dark` / `light` 或散落主题颜色。主题切换动画统一调用 `useThemeTransition`，禁止组件直接操作 `document.startViewTransition` 或根节点主题属性。
 
-Stylelint 会阻止模块 SCSS 中的 hex、命名颜色、`rgb()`、`hsl()` 等所有原始颜色（阴影、渐变、filter 也包含在内）。颜色值和主题差异只可定义在 `_tokens.scss`，模块只能消费 `var(--color-*)`；禁止用私有 CSS 变量绕过主题 token。
+Stylelint 会阻止模块 SCSS 中的 hex、命名颜色、`rgb()`、`hsl()` 等所有原始颜色（阴影、渐变、filter 也包含在内）。原始颜色只可定义在 `_colors.scss`（全主题固定）或 `_tokens.scss`（主题语义色）；模块只能消费 `var(--color-*)`，禁止用私有 CSS 变量绕过主题 token。
 
-凡是新增或改变公共能力、入口、环境变量、路由、存储键、语言 key、依赖、构建/CI 或全局样式规则，必须同步更新文档；写清职责、入口、扩展步骤、验证方式和未决项。改动后运行 `npm run build && npm run lint`。不要修改无关代码、猜测量化业务规则或擅自执行远端 Git 操作。
+凡是新增或改变公共能力、入口、环境变量、路由、存储键、语言 key、依赖、构建/CI 或全局样式规则，必须同步更新文档；写清职责、入口、扩展步骤、验证方式和未决项。改动后运行 `pnpm run build && pnpm run lint`。不要修改无关代码、猜测量化业务规则或擅自执行远端 Git 操作。

@@ -5,19 +5,21 @@
   "type": "module",
   "engines": {
     "node": ">=22 <25",
-    "npm": ">=10"
+    "pnpm": ">=10 <11"
   },
+  "packageManager": "pnpm@10.28.2",
   "scripts": {
-    "dev": "vite",
-    "dev:staging": "vite --mode staging",
-    "build": "npm run lint && tsc -b && vite build",
-    "build:staging": "npm run lint && tsc -b && vite build --mode staging",
-    "build:production": "npm run lint && tsc -b && vite build --mode production",
-    "lint": "oxlint && npm run lint:arithmetic && npm run lint:styles",
-    "lint:arithmetic": "node scripts/check-no-private-arithmetic.mjs",
-    "lint:styles": "stylelint \"src/**/*.scss\"",
-    "test": "tsx --test \"src/**/*.test.ts\"",
-    "preview": "vite preview"
+    "preinstall": "node scripts/enforce-pnpm.mjs",
+    "dev": "node scripts/enforce-pnpm.mjs && vite",
+    "dev:staging": "node scripts/enforce-pnpm.mjs && vite --mode staging",
+    "build": "node scripts/enforce-pnpm.mjs && pnpm run lint && tsc -b && vite build",
+    "build:staging": "node scripts/enforce-pnpm.mjs && pnpm run lint && tsc -b && vite build --mode staging",
+    "build:production": "node scripts/enforce-pnpm.mjs && pnpm run lint && tsc -b && vite build --mode production",
+    "lint": "node scripts/enforce-pnpm.mjs && oxlint && pnpm run lint:arithmetic && pnpm run lint:styles",
+    "lint:arithmetic": "node scripts/enforce-pnpm.mjs && node scripts/check-no-private-arithmetic.mjs",
+    "lint:styles": "node scripts/enforce-pnpm.mjs && stylelint \"src/**/*.scss\"",
+    "test": "node scripts/enforce-pnpm.mjs && tsx --test \"src/**/*.test.ts\"",
+    "preview": "node scripts/enforce-pnpm.mjs && vite preview"
   },
   "dependencies": {
     "copy-to-clipboard": "^4.0.2",

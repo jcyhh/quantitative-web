@@ -4,14 +4,14 @@
 
 ## 1. 自动强制项
 
-`tsconfig.app.json` 已启用严格模式，`npm run build` 会阻断以下问题：
+`tsconfig.app.json` 已启用严格模式，`pnpm run build` 会阻断以下问题：
 
 - 隐式 `any`、未处理的 `null` / `undefined`、不完整的函数返回分支；
 - 通过下标访问可能不存在的值；
 - 将“未传入可选字段”与“显式传入 `undefined`”混为一谈；
 - 未使用的局部变量、参数和 switch 穿透。
 
-`npm run lint` 还会以 error 阻断：
+`pnpm run lint` 还会以 error 阻断：
 
 - `any`；
 - 非空断言 `value!`；
@@ -106,4 +106,4 @@ export function isStrategyDto(value: unknown): value is StrategyDto {
 4. 每个具名函数、类方法、组件与公共 Hook 是否标注了准确返回类型？
 5. 金融字段是否写明单位、精度、舍入和时区，并使用正确的时间/十进制模块？
 6. 是否新增了非空断言、宽泛断言、`any` 或未处理的索引访问？如有，重写实现而不是压制检查。
-7. 执行 `npm run test`、`npm run lint`、`npm run build`；新增解析、转换或领域公式时补充对应单元测试。
+7. 执行 `pnpm run test`、`pnpm run lint`、`pnpm run build`；新增解析、转换或领域公式时补充对应单元测试。

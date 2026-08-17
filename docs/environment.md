@@ -8,9 +8,9 @@
 | --- | --- | --- |
 | `.env` | 所有环境共享的公开默认值 | 自动加载 |
 | `.env.development.example` | 本地开发模板，提交到仓库 | 首次拉取后复制 |
-| `.env.development` | 每位开发者本地开发配置，不提交 | `npm run dev` |
-| `.env.staging` | 预发布验证 | `npm run build:staging` |
-| `.env.production` | 生产构建 | `npm run build` 或 `npm run build:production` |
+| `.env.development` | 每位开发者本地开发配置，不提交 | `pnpm run dev` |
+| `.env.staging` | 预发布验证 | `pnpm run build:staging` |
+| `.env.production` | 生产构建 | `pnpm run build` 或 `pnpm run build:production` |
 
 首次克隆或拉取项目后，若本地尚无 `.env.development`，执行：
 
@@ -26,8 +26,8 @@ cp .env.development.example .env.development
 
 | 命令 | mode | 输出目录 |
 | --- | --- | --- |
-| `npm run build:staging` | `staging` | `dist/staging/` |
-| `npm run build` / `npm run build:production` | `production` | `dist/production/` |
+| `pnpm run build:staging` | `staging` | `dist/staging/` |
+| `pnpm run build` / `pnpm run build:production` | `production` | `dist/production/` |
 
 JS 入口、动态 chunk、CSS、图片、字体等经 Vite 构建图处理的静态资源统一输出到 `dist/<mode>/assets/`，文件名固定为 `[name]-[hash][extname]`。内容变化会改变 hash，因此部署端可以为 `assets/` 设置长期不可变缓存。
 

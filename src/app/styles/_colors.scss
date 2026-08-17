@@ -1,0 +1,8 @@
+// Theme-invariant colors. Use only when a visual value must remain identical in every theme.
+// Theme-aware component colors belong to _tokens.scss and must use semantic --color-* names.
+
+:root {
+  --color-static-transparent: transparent;
+  --color-static-white: #fff;
+  --color-static-black: #000;
+}

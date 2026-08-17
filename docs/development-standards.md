@@ -12,6 +12,7 @@
 4. **默认保守。** 不新增依赖、不更改构建配置、不迁移全局状态；如确有必要，需说明收益、替代方案和影响范围。
 5. **代码与文档同步。** 架构边界、环境变量、接口契约或开发流程改变时，同步更新对应文档。
 6. **AI 可接手。** 新增或改变公共能力时，按 [AI 协作指南](./ai-collaboration.md) 写明职责、入口、扩展步骤、验证方式与未决项，禁止让关键信息只存在于聊天记录中。
+7. **依赖一致。** 包管理器唯一使用 pnpm `10.28.2`。所有项目命令只能使用 `pnpm` 或 `pnpm run`；禁止 npm、yarn、npx、bun。执行守卫会阻断错误执行器和非 pnpm 锁文件，不能绕过或关闭。
 
 ## 2. 目录与依赖规则
 
@@ -80,7 +81,7 @@ app → pages → widgets → features → entities → shared
 - 金额、收益率、日期等展示统一使用 `shared/lib` 中的格式化函数；不要各页自行格式化。展示格式须传入当前语言环境。
 - `shared/lib` 不是万能 `utils`：数值展示只使用 `shared/lib/format`，日期/时间展示只使用 `shared/lib/time`，文件下载只使用 `shared/lib/download`。外部代码只能从各能力的 `index.ts` 导入。
 - 基础十进制运算只从 `shared/lib/decimal` 导入 `decimalAdd`、`decimalSubtract`、`decimalMultiply`、`decimalDivide`。输入与结果优先用字符串；禁止业务模块直接导入 `decimal.js`，Oxlint 会阻断。该模块固定为 40 位有效数字和 `ROUND_HALF_UP`，除以零会抛错。
-- 任何私有 TypeScript/TSX 文件禁止出现原始 `+`、`-`、`*`、`/`、复合赋值及 `++`/`--`。`npm run lint` 的 AST 检查会阻断；加减乘除只能从 `shared/lib/decimal`（金融/业务数据）或 `shared/lib/number`（仅 UI 几何、动画等非金融数据）导入。文本拼接使用模板字符串，不使用 `+`。两个模块自身是唯一实现豁免，禁止扩大豁免范围或跳过脚本。
+- 任何私有 TypeScript/TSX 文件禁止出现原始 `+`、`-`、`*`、`/`、复合赋值及 `++`/`--`。`pnpm run lint` 的 AST 检查会阻断；加减乘除只能从 `shared/lib/decimal`（金融/业务数据）或 `shared/lib/number`（仅 UI 几何、动画等非金融数据）导入。文本拼接使用模板字符串，不使用 `+`。两个模块自身是唯一实现豁免，禁止扩大豁免范围或跳过脚本。
 - `shared/lib/decimal` 解决 JavaScript 二进制浮点误差，不定义业务口径。收益、回撤、手续费、仓位等公式仍放在所属 `entities` 或 `features`，必须声明单位、精度、舍入、边界并补单元测试。
 - 文本复制只从 `shared/lib/clipboard` 导入 `copyText`。禁止直接调用原生 Clipboard API 或直接导入 `copy-to-clipboard`；当前封装固定使用哇学社线上验证过的三方库。`copyText` 返回 `Promise<boolean>`，调用方必须 `await` 真实结果后再按业务场景显示本地化成功/失败反馈。
 - 用户通知只从 `shared/notification` 导入 `notification`。禁止业务模块直接调用 `alert`、`confirm`、`prompt`，Oxlint 会阻断。当前五类方法暂时回退到原生对话框；后续定制样式、队列、位置和关闭交互必须在本模块与其 Provider/UI 内实现，不能改变业务调用入口。通知文本由调用方使用 i18n 生成，不在通知模块硬编码文案。
@@ -103,10 +104,11 @@ app → pages → widgets → features → entities → shared
 1. 项目样式统一使用 SCSS；新增样式文件必须是 `.scss`，不得新增 `.css`、CSS-in-JS 或页面内 `style` 对象（动态计算的单个值除外）。
 2. `src/app/styles` 是唯一允许写全局样式的目录，且只能放全局入口、设计 token、字体登记、mixin、重置、初始化、浏览器全局动效和受控 Utility 规则。禁止在此写任一业务页面、Widget 或组件的视觉样式。
 3. `pages`、`widgets`、`features`、`entities` 和 `shared/ui` 中的组件样式必须与组件同目录，命名为 `组件名.module.scss`，并通过 CSS Modules 引入。禁止新增无作用域的业务 class，也禁止跨模块覆盖别人的 class。
-4. 颜色、字号、圆角、阴影、页面边距和断点等可复用视觉决策，先定义或复用 `src/app/styles/_tokens.scss` 中的 CSS 变量；Sass 变量和 mixin 只用于编译期组织，不替代运行时主题 token。
-5. 组件 SCSS 中禁止出现颜色值（如 `#`、`rgb()`、`hsl()`）；必须消费语义化 `--color-*` token。颜色值和主题差异只能定义在 `_tokens.scss`，不得使用 `dark` / `light` 作为业务组件的 class 判断。
-6. 主题由 `shared/config/theme.ts` 注册主题名、`shared/theme` 负责应用和持久化、`_tokens.scss` 提供各主题的完整语义 token 契约。新增主题时必须同时完成这三处、补齐两种语言名称，并验证现有页面，不得只复制局部颜色。
-7. 主题切换动画只能通过 `shared/theme` 导出的 `useThemeTransition` 实现。该 Hook 会遵守系统“减少动态效果”偏好并兼容不支持 View Transitions API 的浏览器；组件不得自行调用 `document.startViewTransition` 或直接修改根节点主题属性。
+4. 颜色、字号、圆角、阴影、页面边距和断点等可复用视觉决策，先定义或复用全局 CSS 变量；Sass 变量和 mixin 只用于编译期组织，不替代运行时 token。全主题固定不变的颜色登记在 `src/app/styles/_colors.scss`，随主题变化的语义色登记在 `_tokens.scss`。
+5. 组件 SCSS 中禁止出现颜色值（如 `#`、`rgb()`、`hsl()`）；必须消费语义化 `--color-*` token。原始颜色仅能定义在 `_colors.scss`（固定色）或 `_tokens.scss`（主题色），不得使用 `dark` / `light` 作为业务组件的 class 判断。
+6. `_colors.scss` 只允许定义每个主题均完全相同的 `--color-static-*` 值，例如透明、纯白、纯黑；不得放品牌色、状态色、文字色、页面色或任何可能随主题变化的值。需要在主题间改变的颜色必须进入 `_tokens.scss`，并使用语义化名称。
+7. 主题由 `shared/config/theme.ts` 注册主题名、`shared/theme` 负责应用和持久化、`_tokens.scss` 提供各主题的完整语义 token 契约。新增主题时必须同时完成这三处、补齐两种语言名称，并验证现有页面，不得只复制局部颜色。
+8. 主题切换动画只能通过 `shared/theme` 导出的 `useThemeTransition` 实现。该 Hook 会遵守系统“减少动态效果”偏好并兼容不支持 View Transitions API 的浏览器；组件不得自行调用 `document.startViewTransition` 或直接修改根节点主题属性。
 
 CSS/SCSS 的后续 class 名统一使用**小写短横线（kebab-case）**：`strategy-card`、`strategy-card-header`、`is-active`、`tld-button`。禁止新增 camelCase、PascalCase、下划线或无分隔的缩写 class。CSS Modules 的短横线 class 通过 `styles['strategy-card']` 引用；全局 Utility 和需要由 VS Code class 扫描插件识别的 class 使用字面量 `className="tld-flex"`。现有初始 class 不为命名规则做无行为变化的重命名。
 
@@ -115,6 +117,7 @@ CSS/SCSS 的后续 class 名统一使用**小写短横线（kebab-case）**：`s
 ```text
 src/app/styles/
 ├── index.scss          # 唯一全局入口，只能在 main.tsx 导入一次
+├── _colors.scss        # 所有主题固定不变的 --color-static-* 原始色值
 ├── _tokens.scss        # 主题语义 token 与主题色值
 ├── _fonts.scss         # 字体栈与 @font-face 的唯一登记位置
 ├── _mixins.scss        # 可复用 Sass mixin 与断点常量
@@ -134,7 +137,7 @@ src/app/styles/
 - 工具类只用于降低无业务结构的重复代码。一个元素需要多个工具类才能表达完整组件布局，或涉及颜色、边框、图表、卡片、业务状态时，改写为该模块的 `*.module.scss`。
 - 当前只做桌面端；Safe Area 工具类仅为未来移动端保留，不得据此擅自补充手机布局。
 - Stylelint 会在后续模块样式中阻止与 Utility 完全等价的声明：Flex/Grid 展示与常用对齐、2px/5px 尺度的字号、margin、padding、gap。错误会提示改用 `tld-*`。复杂 Grid 模板、定位、图表和业务视觉不在此禁用范围，仍应使用模块 SCSS。
-- Stylelint 同时禁止模块 SCSS 中的十六进制、命名颜色以及 `rgb()`、`hsl()` 等原始颜色函数（包括阴影、渐变和 filter 内的颜色）。颜色值只能维护在 `_tokens.scss`；模块中使用 `var(--color-*)`。不得通过私有 CSS 变量重新定义颜色。
+- Stylelint 同时禁止除 `_colors.scss` 与 `_tokens.scss` 外的 SCSS 中出现十六进制、命名颜色以及 `rgb()`、`hsl()` 等原始颜色函数（包括阴影、渐变和 filter 内的颜色）。固定色只维护在 `_colors.scss`，主题语义色只维护在 `_tokens.scss`；模块中使用 `var(--color-*)`。不得通过私有 CSS 变量重新定义颜色。
 - 初始骨架样式列在 `stylelint.config.mjs` 的 `legacyStyleFiles` 中，仅作为过渡豁免；新增模块不得加入该列表，也不得通过 `stylelint-disable` 绕过规则。需要扩展 Utility 能力时，先补 `_utilities.scss`、文档和 lint 映射，再使用。
 
 ### 6.4 公共组件命名空间
@@ -166,7 +169,9 @@ src/app/styles/
 - 提交保持小而完整，格式：`type(scope): 简短说明`，例如 `feat(strategy): add backtest form`。
 - 不提交 `dist`、本地环境文件、密钥、调试输出或无关格式化改动。
 - 合并前说明：改了什么、为什么、如何验证、是否有后续事项。涉及共享契约时明确提醒其他成员。
-- GitHub CI 会在推送和 PR 上执行 `npm ci`、lint、生产构建和预发布构建。所有合并目标分支都应启用该 CI workflow 的必需状态检查，未通过不得合并。
+- GitHub CI 会在推送和 PR 上执行 `pnpm install --frozen-lockfile`、lint、生产构建和预发布构建。所有合并目标分支都应启用该 CI workflow 的必需状态检查，未通过不得合并。
+- 新增依赖前先确认没有现有能力或浏览器标准 API 可复用；运行时依赖使用 `pnpm add <package>`，开发依赖使用 `pnpm add -D <package>`。同一提交必须包含 `package.json`、`pnpm-lock.yaml`、用途说明和验证结果；禁止手改 lockfile、提交或忽略 `package-lock.json`、`yarn.lock`、`bun.lock*`。
+- 依赖安装脚本默认拒绝执行。`pnpm-workspace.yaml` 的 `onlyBuiltDependencies` 是唯一白名单；当前仅允许 `esbuild`（Vite 构建）和 `@parcel/watcher`（开发文件监听）。如新增依赖要求安装期脚本，先审查脚本、记录包名/用途/风险，再执行 `pnpm approve-builds <明确包名>` 并提交该配置改动；禁止 `pnpm approve-builds` 的全量批准或手工放宽白名单。
 - AI 只能在用户明确要求时执行提交、推送、创建 PR 或修改远端设置。
 
 ## 8. AI 协作者执行协议
@@ -188,7 +193,7 @@ AI 实现时必须：
 
 AI 完成时必须：
 
-1. 运行 `npm run build` 与 `npm run lint`；如果无法运行，明确说明原因。
+1. 运行 `pnpm run build` 与 `pnpm run lint`；如果无法运行，明确说明原因。
 2. 报告变更文件、验证结果，以及需要人工决策的事项。
 3. 不声称已完成未执行的测试、部署或远端操作。
 
@@ -199,7 +204,7 @@ AI 完成时必须：
 - [ ] 功能符合需求，且放在正确模块层级。
 - [ ] 无跨层反向依赖、无内部路径的跨模块导入。
 - [ ] 加载、空、错误状态已覆盖或有明确的暂缓说明。
-- [ ] TypeScript 构建与 lint 通过：`npm run build && npm run lint`。
+- [ ] TypeScript 构建与 lint 通过：`pnpm run build && pnpm run lint`。
 - [ ] 文档、类型、环境变量或 API 契约已同步更新。
 - [ ] 变更说明足以让另一位成员或 AI 无需口头补充即可接手。
 

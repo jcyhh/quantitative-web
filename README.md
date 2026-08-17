@@ -5,9 +5,9 @@
 ## 开始开发
 
 ```bash
-npm install
+pnpm install
 cp .env.development.example .env.development
-npm run dev
+pnpm run dev
 ```
 
 `.env.development` 是本地文件，不提交；拉取代码后若模板更新，手工合并所需字段，不要覆盖个人后端配置。完整环境规则见 [docs/environment.md](docs/environment.md)。
@@ -32,11 +32,15 @@ src/
 
 ## 可用命令
 
-- `npm run dev`：启动本地开发服务器
-- `npm run build`：类型检查并构建生产包到 `dist/production/`
-- `npm run build:staging`：构建预发布包到 `dist/staging/`
-- `npm run lint`：执行 TypeScript/React 与 SCSS 规范检查
-- `npm run test`：执行基础能力单元测试
+- `pnpm run dev`：启动本地开发服务器
+- `pnpm run build`：类型检查并构建生产包到 `dist/production/`
+- `pnpm run build:staging`：构建预发布包到 `dist/staging/`
+- `pnpm run lint`：执行 TypeScript/React 与 SCSS 规范检查
+- `pnpm run test`：执行基础能力单元测试
+
+项目唯一包管理器为 pnpm `10.28.2`。禁止使用 npm、yarn、npx、bun 或其他锁文件执行项目命令；执行守卫会阻断错误包管理器及 `package-lock.json`、`yarn.lock` 等混入。新增依赖使用 `pnpm add <package>` 或 `pnpm add -D <package>`，并在同一提交更新 `package.json` 与 `pnpm-lock.yaml`。
+
+pnpm 默认不执行依赖的安装期脚本，只有已审查且记录在 `pnpm-workspace.yaml` 的包可执行。目前仅允许 Vite 所需的 `esbuild` 和文件监听所需的 `@parcel/watcher`。新增白名单前必须说明包名、脚本用途与风险，并使用 `pnpm approve-builds <明确包名>`；禁止使用全量批准命令。
 
 GitHub Actions 会在推送和 PR 中执行 lint、生产构建与预发布构建；工作流见 `.github/workflows/ci.yml`。
 

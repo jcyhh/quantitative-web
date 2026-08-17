@@ -50,7 +50,9 @@ AI 开始任何代码任务前，按以下顺序阅读：
 2. **决策**：信息不足时只提出会改变实现方向的最小问题；不能用假数据或假定量化规则掩盖不确定性。
 3. **实现**：遵守公共入口和依赖方向，不顺带重构无关区域。
 4. **记录**：按第 3 节检查应更新的文档；新模块应补充最小 README 或公共 API 注释。
-5. **验证**：默认执行 `npm run build && npm run lint`。若未执行或失败，必须如实说明原因与影响。
+5. **验证**：默认执行 `pnpm run build && pnpm run lint`。若未执行或失败，必须如实说明原因与影响。
+
+涉及依赖时，唯一执行器是 pnpm。不得使用 npm、yarn、npx 或 bun；运行时依赖执行 `pnpm add`，开发依赖执行 `pnpm add -D`，并同步更新 `package.json` 和 `pnpm-lock.yaml`。依赖安装脚本默认拒绝：只可在审查脚本用途和风险后，用 `pnpm approve-builds <明确包名>` 增加 `pnpm-workspace.yaml` 的精确白名单，禁止全量批准。
 6. **交接**：最终输出必须包含：改了什么、关键路径、验证结果、假设/未决项。不要宣称已完成未执行的部署、提交、推送或接口联调。
 
 ## 5. 本项目已登记的基础设施
@@ -72,7 +74,7 @@ AI 开始任何代码任务前，按以下顺序阅读：
 | Vite 构建 | `vite.config.ts`、`docs/environment.md` | 仅允许 development/staging/production；`VITE_DEPLOY_ENV` 必须与 mode 一致。不要擅自配置 base、target、sourcemap、manifest、手动分包或 PWA。 |
 | 入口 Meta | `index.html`、`.env.example`、`docs/environment.md` | 产品名、描述、robots 等公开值须三处同步；不得添加虚假的域名、分享图、PWA 或缓存配置。 |
 | LocalStorage | `src/shared/config/app.ts`、`src/shared/lib/storage` | `storageKeys`、`StorageSchema` 与 storage 封装；业务代码禁止直连 Web Storage API。 |
-| 主题 | `src/shared/config/theme.ts`、`src/shared/theme`、`src/app/styles/_tokens.scss` | 注册主题名、补齐完整语义 token、补齐中英文名称；切换必须使用 `useThemeTransition`，组件中禁止硬编码颜色、以主题名分支或直接调用 View Transitions API。 |
+| 主题 | `src/shared/config/theme.ts`、`src/shared/theme`、`src/app/styles/_colors.scss`、`src/app/styles/_tokens.scss` | 所有主题不变的原始色只放 `_colors.scss` 的 `--color-static-*`；主题语义色只放 `_tokens.scss`。注册主题名、补齐完整 token 与中英文名称；切换必须使用 `useThemeTransition`，组件中禁止硬编码颜色、以主题名分支或直接调用 View Transitions API。 |
 | PWA 预留 | `src/shared/lib/pwa`、`docs/pwa.md` | 当前只提供安装生命周期 Hook；不得注册 Service Worker、添加 manifest、缓存策略或入口，直到单独立项确认。 |
 | 样式与响应式 | `src/app/styles`、各模块 `*.module.scss` | 当前只验收最低 1024px 的桌面布局；使用 token、流式容器和模块样式为后续移动端留扩展点，禁止新增全局业务样式或猜测手机视觉。 |
 
@@ -95,7 +97,7 @@ AI 开始任何代码任务前，按以下顺序阅读：
 - 不创建 `shared/utils` 或 `shared/lib/utils`。先查 [基础能力边界](./architecture.md#sharedlib-基础能力边界)：已有能力直接复用；新增跨业务能力必须建独立目录、经 `index.ts` 暴露，并同步登记本表。领域算法不可下沉到 `shared/lib`。
 - 除 `shared/lib/time` 外，禁止使用 `Date`、`new Date`、`Date.now`、`Date.parse` 或 `Intl.DateTimeFormat`。Oxlint 会阻断这些调用；新增时间能力只能先封装到 `shared/lib/time` 再使用，禁止添加 lint 忽略。
 - 除 `shared/lib/decimal` 外，禁止直接导入 `decimal.js`。四则运算可复用该模块；涉及收益、回撤、仓位、手续费等领域公式时，仍须放在所属 `entities`/`features`，先定义业务口径并添加测试。
-- 所有私有 `.ts`/`.tsx` 文件禁止出现 `+`、`-`、`*`、`/`、`+=`、`-=`、`*=`、`/=`、`++`、`--`。`npm run lint:arithmetic` 会解析 AST 并阻断；金融/业务值使用 `shared/lib/decimal`，UI 几何/动画才可使用 `shared/lib/number`，文本拼接使用模板字符串。禁止绕过或扩展实现豁免目录。
+- 所有私有 `.ts`/`.tsx` 文件禁止出现 `+`、`-`、`*`、`/`、`+=`、`-=`、`*=`、`/=`、`++`、`--`。`pnpm run lint:arithmetic` 会解析 AST 并阻断；金融/业务值使用 `shared/lib/decimal`，UI 几何/动画才可使用 `shared/lib/number`，文本拼接使用模板字符串。禁止绕过或扩展实现豁免目录。
 - 除 `shared/lib/clipboard` 外，禁止直接导入 `copy-to-clipboard` 或自行调用原生 Clipboard API。复制文本只调用 `await copyText`，根据真实的 `true`/`false` 在调用处展示所属页面的本地化反馈。
 - 除 `shared/notification` 外，禁止调用原生 `alert`、`confirm`、`prompt`。用户反馈使用 `notification` 的对应方法；传入的文案必须来自调用方 i18n，当前原生回退不代表可跳过未来的定制通知 UI。
 - 新增 `shared/ui` 公共组件时，目录必须为 `tld-<component>`，React 导出为 `Tld<Component>`；业务组件不得滥用该前缀。详见 [公共 UI 命名空间](./architecture.md#公共-ui-命名空间)。
@@ -113,6 +115,6 @@ AI 开始任何代码任务前，按以下顺序阅读：
 - 主题使用语义 token：当前为 `dark`、`light`，但主题名不是组件逻辑。新增主题必须补齐 token 契约和中英文名称。
 - 全局样式入口仅为 `src/app/styles/index.scss`；字体、reset、初始化、动效和 Sass mixin 分文件维护。新增全局样式前，先确认它不能就近放入模块 `*.module.scss`。
 - 高频布局工具类只使用 `_utilities.scss` 定义的 `tld-` 前缀能力；不可生成或使用颜色、主题、业务状态和组件外观类。字号与间距的可用尺度、`gap` 与占位块的区别见开发规范第 6.3 节。
-- `npm run lint` 同时执行 Oxlint 和 Stylelint。Stylelint 会阻止重复实现已有 `tld-*` Utility 的确定等价声明；不要添加 `stylelint-disable` 或把新文件加入 `legacyStyleFiles`，应先扩展 Utility 契约。
-- Stylelint 会阻止模块 SCSS 中的原始颜色（hex、命名颜色、`rgb()`、`hsl()` 等），包括阴影与渐变。主题颜色只允许定义在 `_tokens.scss`，模块只能使用 `var(--color-*)`。
+- `pnpm run lint` 同时执行 Oxlint 和 Stylelint。Stylelint 会阻止重复实现已有 `tld-*` Utility 的确定等价声明；不要添加 `stylelint-disable` 或把新文件加入 `legacyStyleFiles`，应先扩展 Utility 契约。
+- Stylelint 会阻止除 `_colors.scss` 与 `_tokens.scss` 外的 SCSS 中出现原始颜色（hex、命名颜色、`rgb()`、`hsl()` 等），包括阴影与渐变。所有主题固定色只允许定义在 `_colors.scss`，主题颜色只允许定义在 `_tokens.scss`，模块只能使用 `var(--color-*)`。
 - 后续 CSS/SCSS class 必须使用小写短横线（kebab-case），以便 VS Code class 扫描插件识别；CSS Modules 使用 `styles['class-name']` 访问，不得新写 camelCase 或下划线 class。既有初始代码不为此规则做无收益迁移。

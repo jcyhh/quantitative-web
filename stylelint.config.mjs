@@ -5,6 +5,7 @@ const utilityScale = Array.from({ length: 201 }, (_, value) => value)
 const utilityFontSizes = utilityScale.filter((value) => value !== '0px')
 
 const globalStyleFiles = ['src/app/styles/**/*.scss']
+const colorDefinitionFiles = ['src/app/styles/_colors.scss', 'src/app/styles/_tokens.scss']
 
 const legacyStyleFiles = [
   'src/app/router/ui/RouteErrorPage.module.scss',
@@ -28,11 +29,16 @@ export default {
     {
       files: globalStyleFiles,
       rules: {
+        // The global layer defines tokens and implements the tld-* utility classes.
+        'declaration-property-value-disallowed-list': null,
+      },
+    },
+    {
+      files: colorDefinitionFiles,
+      rules: {
         'color-named': null,
         'color-no-hex': null,
         'function-disallowed-list': null,
-        // The global layer defines tokens and implements the tld-* utility classes.
-        'declaration-property-value-disallowed-list': null,
       },
     },
     {
