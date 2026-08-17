@@ -1,0 +1,32 @@
+export const zhCN = {
+  terms: {
+    strategy: '策略', portfolio: '组合', position: '持仓', instrument: '标的', market: '行情',
+    price: '价格', quantity: '数量', amount: '金额', order: '订单', trade: '成交',
+    buy: '买入', sell: '卖出', long: '做多', short: '做空', open: '开仓', close: '平仓',
+    backtest: '回测', return: '收益率', annualizedReturn: '年化收益率', pnl: '盈亏',
+    drawdown: '回撤', maxDrawdown: '最大回撤', volatility: '波动率', sharpeRatio: '夏普比率', winRate: '胜率',
+    risk: '风险', fee: '手续费', commission: '佣金', slippage: '滑点',
+    account: '账户', balance: '余额', availableBalance: '可用余额', equity: '净值', cash: '现金',
+    benchmark: '基准', factor: '因子', dataSource: '数据源', timeframe: '时间周期', status: '状态',
+  },
+  navigation: { dashboard: '仪表盘', strategies: '策略管理', research: '研究中心', portfolio: '组合与持仓', settings: '系统设置' },
+  layout: { environment: '模拟交易环境', workspace: 'QUANTITATIVE WORKSPACE', marketConnected: '市场数据连接正常', userMenu: '打开用户菜单', language: '语言', theme: '主题' },
+  theme: { dark: '深色', light: '浅色' },
+  dashboard: {
+    greeting: '早上好，Jcy', subtitle: '这是你的量化投资工作台概览。', createStrategy: '+ 新建策略',
+    equity: '策略净值', totalReturn: '累计收益', maxDrawdown: '最大回撤', activeStrategies: '运行中策略',
+    equityChange: '今日 +1.24%', returnChange: '近 30 日 +3.18%', riskLevel: '风险等级：中', dataAsOf: '数据截至 10:30',
+    equityCurve: '权益曲线', equityCurveDescription: '组合净值 · 近 30 个交易日', viewDetails: '查看详情', chartEmpty: '接入行情服务后展示实时权益曲线',
+    activity: '最近动态', activityOne: '沪深 300 动量轮动完成今日调仓', activityTwo: '中性多因子选股回测任务已完成', activityThree: 'CTA 趋势跟踪触发回撤预警',
+    strategyOverview: '策略概览', strategyDescription: '快速查看当前策略运行表现', manageStrategies: '管理策略',
+    table: { strategy: '策略', status: '状态', return: '累计收益', drawdown: '最大回撤' },
+    running: '运行中', paused: '已暂停', today: '10:12', yesterday: '昨天', august16: '08/16',
+  },
+  pages: {
+    strategies: { title: '策略管理', description: '在这里创建、配置并运行量化策略。' },
+    research: { title: '研究中心', description: '管理因子、数据集与回测研究。' },
+    portfolio: { title: '组合与持仓', description: '跟踪组合表现、风险敞口与当前持仓。' },
+    settings: { title: '系统设置', description: '配置交易账户、数据源与通知策略。' },
+  },
+  error: { title: '页面发生异常', unknown: '发生了未知错误。', backHome: '返回仪表盘' },
+} as const

@@ -1,0 +1,123 @@
+// Global utility classes. They are intentionally limited to layout and neutral behavior.
+// Prefix: tld- (Quant Lab design utilities). Do not add colors, theme names, or business visuals here.
+
+$tld-utility-max-px: 200;
+
+@function tld-is-spacing-step($value) {
+  @return $value % 2 == 0 or $value % 5 == 0;
+}
+
+// Display and flex layout
+.tld-block { display: block; }
+.tld-inline-block { display: inline-block; }
+.tld-hidden { display: none; }
+.tld-flex { display: flex; }
+.tld-inline-flex { display: inline-flex; }
+.tld-flex-row { flex-direction: row; }
+.tld-flex-col { flex-direction: column; }
+.tld-flex-wrap { flex-wrap: wrap; }
+.tld-flex-nowrap { flex-wrap: nowrap; }
+.tld-flex-1 { flex: 1 1 0%; }
+.tld-flex-auto { flex: 1 1 auto; }
+.tld-flex-none { flex: none; }
+.tld-grow { flex-grow: 1; }
+.tld-grow-0 { flex-grow: 0; }
+.tld-shrink { flex-shrink: 1; }
+.tld-shrink-0 { flex-shrink: 0; }
+.tld-items-start { align-items: flex-start; }
+.tld-items-center { align-items: center; }
+.tld-items-end { align-items: flex-end; }
+.tld-items-stretch { align-items: stretch; }
+.tld-self-start { align-self: flex-start; }
+.tld-self-center { align-self: center; }
+.tld-self-end { align-self: flex-end; }
+.tld-justify-start { justify-content: flex-start; }
+.tld-justify-center { justify-content: center; }
+.tld-justify-end { justify-content: flex-end; }
+.tld-justify-between { justify-content: space-between; }
+.tld-justify-around { justify-content: space-around; }
+
+// Grid layout
+.tld-grid { display: grid; }
+.tld-inline-grid { display: inline-grid; }
+.tld-grid-auto-fit { grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--tld-grid-min, 240px)), 1fr)); }
+.tld-grid-auto-fill { grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--tld-grid-min, 240px)), 1fr)); }
+
+@for $column from 1 through 12 {
+  .tld-grid-cols-#{$column} { grid-template-columns: repeat($column, minmax(0, 1fr)); }
+  .tld-col-span-#{$column} { grid-column: span $column / span $column; }
+}
+
+// Sizing, flow and neutral interaction
+.tld-w-full { width: 100%; }
+.tld-h-full { height: 100%; }
+.tld-min-w-0 { min-width: 0; }
+.tld-min-h-0 { min-height: 0; }
+.tld-relative { position: relative; }
+.tld-overflow-hidden { overflow: hidden; }
+.tld-overflow-auto { overflow: auto; }
+.tld-overflow-x-auto { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.tld-overflow-y-auto { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.tld-cursor-pointer { cursor: pointer; }
+.tld-pointer-events-none { pointer-events: none; }
+.tld-select-none { user-select: none; }
+.tld-object-cover { width: 100%; height: 100%; object-fit: cover; }
+.tld-rounded-full { border-radius: 9999px; }
+
+// Text flow
+.tld-text-left { text-align: left; }
+.tld-text-center { text-align: center; }
+.tld-text-right { text-align: right; }
+.tld-font-medium { font-weight: 500; }
+.tld-font-semibold { font-weight: 600; }
+.tld-font-bold { font-weight: 700; }
+.tld-whitespace-nowrap { white-space: nowrap; }
+.tld-break-all { overflow-wrap: anywhere; }
+.tld-truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+@for $line from 2 through 5 {
+  .tld-line-clamp-#{$line} {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: $line;
+  }
+}
+
+// Safe-area support for a future mobile scope. These classes are inert on desktop browsers.
+.tld-safe-top { padding-top: env(safe-area-inset-top, 0); }
+.tld-safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0); }
+.tld-safe-inline { padding-right: env(safe-area-inset-right, 0); padding-left: env(safe-area-inset-left, 0); }
+.tld-safe-block { padding-top: env(safe-area-inset-top, 0); padding-bottom: env(safe-area-inset-bottom, 0); }
+.tld-safe-spacer-top { width: 100%; height: env(safe-area-inset-top, 0); }
+.tld-safe-spacer-bottom { width: 100%; height: env(safe-area-inset-bottom, 0); }
+
+// Values follow the requested 2px/5px scale. Font size starts at 2px; spacing may be zero.
+@for $value from 0 through $tld-utility-max-px {
+  @if tld-is-spacing-step($value) {
+    @if $value > 0 {
+      .tld-fs-#{$value} { font-size: #{$value}px; }
+    }
+
+    .tld-m-#{$value} { margin: #{$value}px; }
+    .tld-mx-#{$value} { margin-right: #{$value}px; margin-left: #{$value}px; }
+    .tld-my-#{$value} { margin-top: #{$value}px; margin-bottom: #{$value}px; }
+    .tld-mt-#{$value} { margin-top: #{$value}px; }
+    .tld-mr-#{$value} { margin-right: #{$value}px; }
+    .tld-mb-#{$value} { margin-bottom: #{$value}px; }
+    .tld-ml-#{$value} { margin-left: #{$value}px; }
+
+    .tld-p-#{$value} { padding: #{$value}px; }
+    .tld-px-#{$value} { padding-right: #{$value}px; padding-left: #{$value}px; }
+    .tld-py-#{$value} { padding-top: #{$value}px; padding-bottom: #{$value}px; }
+    .tld-pt-#{$value} { padding-top: #{$value}px; }
+    .tld-pr-#{$value} { padding-right: #{$value}px; }
+    .tld-pb-#{$value} { padding-bottom: #{$value}px; }
+    .tld-pl-#{$value} { padding-left: #{$value}px; }
+
+    .tld-gap-#{$value} { gap: #{$value}px; }
+    .tld-row-gap-#{$value} { row-gap: #{$value}px; }
+    .tld-column-gap-#{$value} { column-gap: #{$value}px; }
+    .tld-spacer-#{$value} { display: block; width: 100%; height: #{$value}px; flex: 0 0 #{$value}px; }
+  }
+}

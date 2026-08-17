@@ -1,0 +1,25 @@
+.page {
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+  padding: 100px var(--page-gutter) 56px;
+}
+
+.eyebrow {
+  margin: 0;
+  color: var(--color-text-subtle);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.page h1 {
+  margin: 13px 0 8px;
+  color: var(--color-text-strong);
+  font-size: var(--font-size-title);
+  letter-spacing: -0.035em;
+}
+
+.description {
+  margin: 0;
+  color: var(--color-text-secondary);
+}

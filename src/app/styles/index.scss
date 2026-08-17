@@ -1,0 +1,15 @@
+// Global style entry. Import this file only once from src/main.tsx.
+@use './tokens';
+@use './fonts';
+@use './reset';
+@use './init';
+@use './motion';
+@use './utilities';
+
+.route-loading {
+  display: grid;
+  min-height: 100vh;
+  padding: 32px;
+  place-content: center;
+  text-align: center;
+}

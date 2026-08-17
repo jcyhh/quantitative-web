@@ -1,0 +1,37 @@
+.page {
+  display: grid;
+  min-height: 100vh;
+  padding: 32px;
+  place-content: center;
+  text-align: center;
+}
+
+.eyebrow {
+  margin: 0;
+  color: var(--color-text-subtle);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.page h1 {
+  margin: 13px 0 8px;
+  color: var(--color-text-strong);
+  font-size: var(--font-size-title);
+}
+
+.page > p:last-of-type {
+  margin: 0;
+  color: var(--color-text-secondary);
+}
+
+.button {
+  margin: 22px auto 0;
+  padding: 10px 15px;
+  border-radius: 7px;
+  color: var(--color-on-accent);
+  background: var(--color-positive);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}

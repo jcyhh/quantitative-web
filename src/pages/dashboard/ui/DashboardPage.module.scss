@@ -1,0 +1,222 @@
+@use '../../../app/styles/mixins' as mixin;
+
+.page {
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+  padding: var(--page-block-padding) var(--page-gutter) 56px;
+}
+
+.pageHeading,
+.panelHeading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.pageHeading h1,
+.panelHeading h2,
+.pageHeading p,
+.panelHeading p {
+  margin-top: 0;
+}
+
+.pageHeading h1 {
+  margin-bottom: 8px;
+  color: var(--color-text-strong);
+  font-size: var(--font-size-title);
+  letter-spacing: -0.035em;
+}
+
+.panelHeading h2 {
+  margin-bottom: 5px;
+  color: var(--color-text);
+  font-size: 15px;
+}
+
+.pageHeading > div > p,
+.panelHeading p {
+  margin-bottom: 0;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+}
+
+.primaryButton {
+  padding: 10px 15px;
+  border: 0;
+  border-radius: 7px;
+  color: var(--color-on-accent);
+  background: var(--color-positive);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.metricsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 30px;
+}
+
+.contentGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.75fr) minmax(290px, 0.85fr);
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.panel {
+  padding: 20px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-panel);
+}
+
+.textButton {
+  padding: 0;
+  border: 0;
+  color: var(--color-info);
+  background: transparent;
+  font-size: var(--font-size-caption);
+}
+
+.chartPlaceholder {
+  position: relative;
+  display: flex;
+  height: clamp(210px, 18vw, 260px);
+  align-items: end;
+  justify-content: center;
+  overflow: hidden;
+  margin-top: 20px;
+  border-radius: 7px;
+  color: var(--color-text-tertiary);
+  background: repeating-linear-gradient(0deg, transparent, transparent 45px, var(--color-chart-grid) 46px),
+    repeating-linear-gradient(90deg, transparent, transparent 85px, var(--color-chart-grid) 86px);
+  font-size: var(--font-size-caption);
+
+  span {
+    z-index: 1;
+    margin-bottom: 16px;
+    padding: 5px 8px;
+    background: var(--color-surface);
+  }
+}
+
+.chartLine {
+  position: absolute;
+  inset: 42px 22px 34px;
+  background: linear-gradient(160deg, transparent 0 18%, var(--color-positive) 18.4% 19%, transparent 19.4% 32%, var(--color-positive) 32.4% 33%, transparent 33.4% 46%, var(--color-positive) 46.4% 47%, transparent 47.4% 62%, var(--color-positive) 62.4% 63%, transparent 63.4% 74%, var(--color-positive) 74.4% 75%, transparent 75.4%);
+  opacity: 0.75;
+}
+
+.activityList {
+  display: grid;
+  gap: 22px;
+  margin: 26px 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--color-text-normal);
+  font-size: 13px;
+  line-height: 1.5;
+
+  li {
+    position: relative;
+    padding-left: 17px;
+  }
+
+  time {
+    display: block;
+    margin-top: 3px;
+    color: var(--color-text-secondary);
+    font-size: 11px;
+  }
+}
+
+.activityMark {
+  position: absolute;
+  top: 5px;
+  left: 0;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-info);
+}
+
+.positive {
+  background: var(--color-positive);
+}
+
+.warning {
+  background: var(--color-warning);
+}
+
+.strategiesPanel {
+  margin-top: 14px;
+}
+
+.tableWrap {
+  overflow-x: auto;
+  margin-top: 16px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.strategyTable {
+  width: 100%;
+  min-width: 620px;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13px;
+
+  th {
+    padding: 0 10px 11px;
+    color: var(--color-text-secondary);
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  td {
+    padding: 14px 10px;
+    border-top: 1px solid var(--color-table-border);
+    color: var(--color-text-normal);
+  }
+
+  td:first-child {
+    color: var(--color-table-strong);
+    font-weight: 500;
+  }
+}
+
+.statusPill {
+  padding: 3px 7px;
+  border-radius: 99px;
+  font-size: 11px;
+}
+
+.running {
+  color: var(--color-positive-text);
+  background: var(--color-positive-subtle);
+}
+
+.paused {
+  color: var(--color-status-paused);
+  background: var(--color-status-paused-surface);
+}
+
+.valuePositive {
+  color: var(--color-positive);
+}
+
+.valueNegative {
+  color: var(--color-negative);
+}
+
+@include mixin.down(mixin.$breakpoint-desktop-compact) {
+  .metricsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .contentGrid {
+    grid-template-columns: 1fr;
+  }
+}

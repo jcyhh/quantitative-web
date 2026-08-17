@@ -1,0 +1,175 @@
+@use '../../../app/styles/mixins' as mixin;
+
+.appShell {
+  display: flex;
+  min-height: 100vh;
+  background: var(--color-page);
+}
+
+.sidebar {
+  display: flex;
+  flex: 0 0 var(--sidebar-width);
+  flex-direction: column;
+  padding: 24px 14px 18px;
+  border-right: 1px solid var(--color-border-subtle);
+  background: var(--color-surface-raised);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 10px;
+  color: var(--color-text-strong);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-decoration: none;
+}
+
+.brandMark {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 8px;
+  color: var(--color-on-accent);
+  background: linear-gradient(135deg, var(--color-brand-start), var(--color-brand-end));
+  font-size: 15px;
+}
+
+.mainNav {
+  display: grid;
+  gap: 5px;
+  margin-top: 42px;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: var(--color-text-muted);
+  font-size: 14px;
+  text-decoration: none;
+  transition: background-color 0.15s, color 0.15s;
+
+  &:hover,
+  &.isActive {
+    color: var(--color-text-strong);
+    background: var(--color-nav-active);
+  }
+
+  &.isActive {
+    box-shadow: inset 2px 0 var(--color-positive);
+  }
+}
+
+.navIcon {
+  width: 16px;
+  color: var(--color-positive);
+  text-align: center;
+  font-size: 17px;
+}
+
+.sidebarFooter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: auto;
+  padding: 12px 10px 0;
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-caption);
+}
+
+.connectionDot,
+.marketStatus span {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-positive);
+  box-shadow: 0 0 0 3px var(--color-positive-halo);
+}
+
+.mainContent {
+  width: min(100%, 1600px);
+  flex: 1;
+  min-width: 0;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--header-height);
+  padding: 0 var(--page-gutter);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.eyebrow {
+  margin: 0;
+  color: var(--color-text-subtle);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.marketStatus {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 4px 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-caption);
+
+  span {
+    width: 5px;
+    height: 5px;
+  }
+}
+
+.topbarActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.userMenu {
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--color-control-border);
+  border-radius: 50%;
+  color: var(--color-control-text);
+  background: var(--color-surface-interactive);
+}
+
+@include mixin.down(mixin.$breakpoint-desktop-compact) {
+  .sidebar {
+    flex-basis: 64px;
+    align-items: center;
+    padding-inline: 8px;
+  }
+
+  .brand {
+    padding: 0;
+
+    span:last-child {
+      display: none;
+    }
+  }
+
+  .navItem {
+    padding: 11px;
+    font-size: 0;
+  }
+
+  .navIcon {
+    font-size: 18px;
+  }
+
+  .sidebarFooter {
+    font-size: 0;
+  }
+}

@@ -1,0 +1,32 @@
+export const enUS = {
+  terms: {
+    strategy: 'Strategy', portfolio: 'Portfolio', position: 'Position', instrument: 'Instrument', market: 'Market',
+    price: 'Price', quantity: 'Quantity', amount: 'Amount', order: 'Order', trade: 'Trade',
+    buy: 'Buy', sell: 'Sell', long: 'Long', short: 'Short', open: 'Open', close: 'Close',
+    backtest: 'Backtest', return: 'Return', annualizedReturn: 'Annualized Return', pnl: 'Profit and Loss',
+    drawdown: 'Drawdown', maxDrawdown: 'Maximum Drawdown', volatility: 'Volatility', sharpeRatio: 'Sharpe Ratio', winRate: 'Win Rate',
+    risk: 'Risk', fee: 'Fee', commission: 'Commission', slippage: 'Slippage',
+    account: 'Account', balance: 'Balance', availableBalance: 'Available Balance', equity: 'Equity', cash: 'Cash',
+    benchmark: 'Benchmark', factor: 'Factor', dataSource: 'Data Source', timeframe: 'Timeframe', status: 'Status',
+  },
+  navigation: { dashboard: 'Dashboard', strategies: 'Strategies', research: 'Research', portfolio: 'Portfolio', settings: 'Settings' },
+  layout: { environment: 'Paper trading environment', workspace: 'QUANTITATIVE WORKSPACE', marketConnected: 'Market data connection is healthy', userMenu: 'Open user menu', language: 'Language', theme: 'Theme' },
+  theme: { dark: 'Dark', light: 'Light' },
+  dashboard: {
+    greeting: 'Good morning, Jcy', subtitle: 'Here is an overview of your quantitative investment workspace.', createStrategy: '+ Create strategy',
+    equity: 'Strategy equity', totalReturn: 'Total return', maxDrawdown: 'Maximum drawdown', activeStrategies: 'Active strategies',
+    equityChange: 'Today +1.24%', returnChange: 'Last 30 days +3.18%', riskLevel: 'Risk level: Medium', dataAsOf: 'Data as of 10:30',
+    equityCurve: 'Equity curve', equityCurveDescription: 'Portfolio net value · Last 30 trading days', viewDetails: 'View details', chartEmpty: 'Connect a market-data service to display the live equity curve',
+    activity: 'Recent activity', activityOne: 'CSI 300 Momentum Rotation completed today’s rebalance', activityTwo: 'Neutral Multi-factor Selection backtest completed', activityThree: 'CTA Trend Following triggered a drawdown alert',
+    strategyOverview: 'Strategy overview', strategyDescription: 'Quickly review current strategy performance', manageStrategies: 'Manage strategies',
+    table: { strategy: 'Strategy', status: 'Status', return: 'Total return', drawdown: 'Maximum drawdown' },
+    running: 'Running', paused: 'Paused', today: '10:12', yesterday: 'Yesterday', august16: 'Aug 16',
+  },
+  pages: {
+    strategies: { title: 'Strategies', description: 'Create, configure, and run quantitative strategies here.' },
+    research: { title: 'Research', description: 'Manage factors, datasets, and backtest research.' },
+    portfolio: { title: 'Portfolio & Positions', description: 'Track performance, risk exposure, and current positions.' },
+    settings: { title: 'Settings', description: 'Configure trading accounts, data sources, and notifications.' },
+  },
+  error: { title: 'Something went wrong', unknown: 'An unexpected error occurred.', backHome: 'Back to dashboard' },
+} as const

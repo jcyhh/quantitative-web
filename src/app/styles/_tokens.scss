@@ -1,0 +1,87 @@
+// Theme contract: component SCSS may only consume these semantic variables.
+// To add a theme, register its name in shared/config/theme.ts and define this full contract below.
+
+:root,
+:root[data-theme='dark'] {
+  --color-page: #0b1020;
+  --color-surface: #10192c;
+  --color-surface-raised: #0e1527;
+  --color-surface-interactive: #172945;
+  --color-border: #26324b;
+  --color-border-subtle: #202a40;
+  --color-control-border: #385171;
+  --color-text: #edf3fb;
+  --color-text-strong: #f7f9fc;
+  --color-text-normal: #c9d3e0;
+  --color-text-secondary: #8391a8;
+  --color-text-muted: #91a0b8;
+  --color-text-subtle: #61708c;
+  --color-on-accent: #06101a;
+  --color-positive: #4fe3b3;
+  --color-positive-text: #55d9b1;
+  --color-positive-subtle: rgb(79 227 179 / 11%);
+  --color-positive-halo: rgb(79 227 179 / 10%);
+  --color-negative: #ff8790;
+  --color-info: #6db9ff;
+  --color-warning: #f4bd60;
+  --color-nav-active: #19243b;
+  --color-chart-grid: #17233a;
+  --color-table-border: #202c43;
+  --color-table-strong: #e7edf6;
+  --color-status-paused: #9baac1;
+  --color-status-paused-surface: #202c43;
+  --color-control-text: #b8d6f9;
+  --color-control-surface: #111c30;
+  --color-brand-start: #4fe3b3;
+  --color-brand-end: #51a8ff;
+
+  --font-size-body: 14px;
+  --font-size-caption: 12px;
+  --font-size-title: clamp(24px, 1.45vw, 28px);
+  --line-height-body: 1.5;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --shadow-panel: 0 12px 30px rgb(0 0 0 / 8%);
+  --content-max-width: 1340px;
+  --page-gutter: clamp(24px, 2.8vw, 40px);
+  --page-block-padding: 36px;
+  --header-height: 76px;
+  --sidebar-width: 232px;
+}
+
+:root[data-theme='light'] {
+  --color-page: #f5f7fa;
+  --color-surface: #ffffff;
+  --color-surface-raised: #ffffff;
+  --color-surface-interactive: #edf4fc;
+  --color-border: #dce3ed;
+  --color-border-subtle: #e4e9f0;
+  --color-control-border: #b9c9dd;
+  --color-text: #172033;
+  --color-text-strong: #111827;
+  --color-text-normal: #3f4b5f;
+  --color-text-secondary: #66748a;
+  --color-text-muted: #64748b;
+  --color-text-subtle: #758398;
+  --color-on-accent: #062016;
+  --color-positive: #158466;
+  --color-positive-text: #08795c;
+  --color-positive-subtle: rgb(21 132 102 / 12%);
+  --color-positive-halo: rgb(21 132 102 / 13%);
+  --color-negative: #cf3d50;
+  --color-info: #2475c5;
+  --color-warning: #b87912;
+  --color-nav-active: #e8f1fc;
+  --color-chart-grid: #dce5ef;
+  --color-table-border: #e6ebf1;
+  --color-table-strong: #182337;
+  --color-status-paused: #66748a;
+  --color-status-paused-surface: #edf1f5;
+  --color-control-text: #28415e;
+  --color-control-surface: #ffffff;
+  --color-brand-start: #1a9c79;
+  --color-brand-end: #3b82d0;
+
+  --shadow-panel: 0 12px 30px rgb(31 48 71 / 7%);
+}

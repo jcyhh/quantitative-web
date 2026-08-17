@@ -1,0 +1,18 @@
+import { useTranslation } from 'react-i18next'
+import type { ReactElement } from 'react'
+import { MetricCard } from '../../../shared/ui/metric-card'
+import { formatCurrency, formatPercent } from '../../../shared/lib/format'
+import styles from './DashboardPage.module.scss'
+
+const strategyRows = [
+  { name: '沪深 300 动量轮动', statusKey: 'dashboard.running', returnRate: 0.1248, drawdown: -0.0362 },
+  { name: '中性多因子选股', statusKey: 'dashboard.running', returnRate: 0.0864, drawdown: -0.0218 },
+  { name: 'CTA 趋势跟踪', statusKey: 'dashboard.paused', returnRate: -0.0113, drawdown: -0.0587 },
+]
+
+export function DashboardPage(): ReactElement {
+  const { t, i18n } = useTranslation()
+  const locale = i18n.resolvedLanguage ?? i18n.language
+
+  return <section className={styles.page}><div className={styles.pageHeading}><div><h1>{t('dashboard.greeting')}</h1><p>{t('dashboard.subtitle')}</p></div><button className={styles.primaryButton} type="button">{t('dashboard.createStrategy')}</button></div><div className={styles.metricsGrid}><MetricCard label={t('dashboard.equity')} value={formatCurrency(1_284_560, 'CNY', locale)} change={t('dashboard.equityChange')} trend="positive" /><MetricCard label={t('dashboard.totalReturn')} value={formatPercent(0.1842, 2, locale)} change={t('dashboard.returnChange')} trend="positive" /><MetricCard label={t('dashboard.maxDrawdown')} value={formatPercent(-0.0675, 2, locale)} change={t('dashboard.riskLevel')} trend="negative" /><MetricCard label={t('dashboard.activeStrategies')} value="2 / 3" change={t('dashboard.dataAsOf')} /></div><div className={styles.contentGrid}><section className={styles.panel}><div className={styles.panelHeading}><div><h2>{t('dashboard.equityCurve')}</h2><p>{t('dashboard.equityCurveDescription')}</p></div><button className={styles.textButton} type="button">{t('dashboard.viewDetails')}</button></div><div className={styles.chartPlaceholder} role="img" aria-label={t('dashboard.equityCurve')}><div className={styles.chartLine} /><span>{t('dashboard.chartEmpty')}</span></div></section><section className={styles.panel}><div className={styles.panelHeading}><h2>{t('dashboard.activity')}</h2></div><ul className={styles.activityList}><li><span className={`${styles.activityMark} ${styles.positive}`} />{t('dashboard.activityOne')} <time>{t('dashboard.today')}</time></li><li><span className={styles.activityMark} />{t('dashboard.activityTwo')} <time>{t('dashboard.yesterday')}</time></li><li><span className={`${styles.activityMark} ${styles.warning}`} />{t('dashboard.activityThree')} <time>{t('dashboard.august16')}</time></li></ul></section></div><section className={`${styles.panel} ${styles.strategiesPanel}`}><div className={styles.panelHeading}><div><h2>{t('dashboard.strategyOverview')}</h2><p>{t('dashboard.strategyDescription')}</p></div><button className={styles.textButton} type="button">{t('dashboard.manageStrategies')}</button></div><div className={styles.tableWrap}><table className={styles.strategyTable}><thead><tr><th>{t('dashboard.table.strategy')}</th><th>{t('dashboard.table.status')}</th><th>{t('dashboard.table.return')}</th><th>{t('dashboard.table.drawdown')}</th></tr></thead><tbody>{strategyRows.map((strategy) => <tr key={strategy.name}><td>{strategy.name}</td><td><span className={`${styles.statusPill} ${strategy.statusKey === 'dashboard.running' ? styles.running : styles.paused}`}>{t(strategy.statusKey)}</span></td><td className={strategy.returnRate >= 0 ? styles.valuePositive : styles.valueNegative}>{formatPercent(strategy.returnRate, 2, locale)}</td><td>{formatPercent(strategy.drawdown, 2, locale)}</td></tr>)}</tbody></table></div></section></section>
+}

@@ -1,0 +1,108 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["react", "typescript", "oxc"],
+  "rules": {
+    "react/rules-of-hooks": "error",
+    "react/only-export-components": ["warn", { "allowConstantExport": true }],
+    "typescript/explicit-function-return-type": "error",
+    "typescript/no-explicit-any": "error",
+    "typescript/no-non-null-assertion": "error",
+    "typescript/consistent-type-imports": "error",
+    "no-restricted-globals": [
+      "error",
+      {
+        "globals": [
+          { "name": "localStorage", "message": "Use the centralized storage module from shared/lib/storage instead." },
+          { "name": "sessionStorage", "message": "Use the centralized storage module from shared/lib/storage instead." },
+          { "name": "Date", "message": "Use the centralized time module from shared/lib/time instead of the native Date API." },
+          { "name": "alert", "message": "Use the centralized notification module from shared/notification instead of the native alert API." },
+          { "name": "confirm", "message": "Use the centralized notification module from shared/notification instead of the native confirm API." },
+          { "name": "prompt", "message": "Use the centralized notification module from shared/notification instead of the native prompt API." }
+        ],
+        "checkGlobalObject": true
+      }
+    ],
+    "no-restricted-properties": [
+      "error",
+      {
+        "object": "Intl",
+        "property": "DateTimeFormat",
+        "message": "Use the centralized time module from shared/lib/time instead of Intl.DateTimeFormat."
+      },
+      {
+        "property": "clipboard",
+        "message": "Use the centralized clipboard module from shared/lib/clipboard instead of the native Clipboard API."
+      },
+      {
+        "property": "execCommand",
+        "message": "Use the centralized clipboard module from shared/lib/clipboard instead of document.execCommand."
+      }
+    ],
+    "no-restricted-imports": [
+      "error",
+      {
+        "paths": [
+          {
+            "name": "decimal.js",
+            "message": "Use the centralized decimal module from shared/lib/decimal instead of importing decimal.js directly."
+          },
+          {
+            "name": "copy-to-clipboard",
+            "message": "Use the centralized clipboard module from shared/lib/clipboard instead of importing copy-to-clipboard directly."
+          }
+        ]
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["src/shared/lib/storage/**/*.ts"],
+      "rules": {
+        "no-restricted-globals": [
+          "error",
+          {
+            "globals": [
+              { "name": "Date", "message": "Use the centralized time module from shared/lib/time instead of the native Date API." }
+            ],
+            "checkGlobalObject": true
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/shared/lib/time/**/*.ts"],
+      "rules": {
+        "no-restricted-globals": "off",
+        "no-restricted-properties": "off"
+      }
+    },
+    {
+      "files": ["src/shared/lib/decimal/**/*.ts"],
+      "rules": {
+        "no-restricted-imports": "off"
+      }
+    },
+    {
+      "files": ["src/shared/lib/clipboard/**/*.ts"],
+      "rules": {
+        "no-restricted-imports": "off"
+      }
+    },
+    {
+      "files": ["src/shared/notification/**/*.ts"],
+      "rules": {
+        "no-restricted-globals": [
+          "error",
+          {
+            "globals": [
+              { "name": "localStorage", "message": "Use the centralized storage module from shared/lib/storage instead." },
+              { "name": "sessionStorage", "message": "Use the centralized storage module from shared/lib/storage instead." },
+              { "name": "Date", "message": "Use the centralized time module from shared/lib/time instead of the native Date API." }
+            ],
+            "checkGlobalObject": true
+          }
+        ]
+      }
+    }
+  ]
+}
