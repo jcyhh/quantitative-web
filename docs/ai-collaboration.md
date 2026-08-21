@@ -1,5 +1,7 @@
 # AI 协作指南
 
+本项目的 AI 代码协作工具统一使用 Codex。每位成员都应从仓库根目录打开 Codex，让它读取 `AGENTS.md`；任何代码改动前，再由 Codex 阅读与任务匹配的团队 Skill。不得将相同任务交由其他 AI 编码工具执行后再绕过本流程合入。
+
 本项目会长期由多名人工协作者和多种 AI 工具共同维护。本文件的目标是让任一 AI 在**没有聊天记录、没有口头交接**的情况下，仍能定位正确模块、遵守约束、完成最小范围改动并自证结果。
 
 ## 1. 必读顺序
@@ -13,6 +15,7 @@ AI 开始任何代码任务前，按以下顺序阅读：
 5. [架构约定](./architecture.md)：FSD 层级与依赖方向。
 6. 与任务有关的模块 `README.md`、类型、公共入口 `index.ts` 和现有测试。
 7. 涉及环境、仓库治理或未决事项时，再阅读[环境配置](./environment.md)和[待办](./todo.md)。
+8. 选择并阅读匹配的团队 Skill：功能实现读取 `ai/skills/quant-lab-feature-delivery/SKILL.md`；跨切面变更读取 `ai/skills/quant-lab-cross-cutting-change/SKILL.md`；对已有 diff 做独立审查读取 `ai/skills/quant-lab-change-review/SKILL.md`。完整角色边界见 [AI Skills 与 Agent 协作](./ai-skills.md)。
 
 如果任务与现有文档冲突，以用户当前需求为准；AI 必须在最终说明中指出冲突和实际采用的处理方式。
 
@@ -77,6 +80,7 @@ AI 开始任何代码任务前，按以下顺序阅读：
 | 主题 | `src/shared/config/theme.ts`、`src/shared/theme`、`src/app/styles/_colors.scss`、`src/app/styles/_tokens.scss` | 所有主题不变的原始色只放 `_colors.scss` 的 `--color-static-*`；主题语义色只放 `_tokens.scss`。注册主题名、补齐完整 token 与中英文名称；切换必须使用 `useThemeTransition`，组件中禁止硬编码颜色、以主题名分支或直接调用 View Transitions API。 |
 | PWA 预留 | `src/shared/lib/pwa`、`docs/pwa.md` | 当前只提供安装生命周期 Hook；不得注册 Service Worker、添加 manifest、缓存策略或入口，直到单独立项确认。 |
 | Electron 桌面壳 | `electron/`、`electron-builder.yml` | React 仍在 `src` 按 FSD 组织；桌面能力只经 preload 的具名方法和已校验 sender 的 IPC 暴露。保持 `contextIsolation` 与 sandbox，禁止 renderer Node integration、通用 IPC 通道和未验证的外部导航。扩展步骤见 `electron/README.md`；安装包仅由 `desktop:package*` 生成到被忽略的 `release/`。 |
+| 团队 AI workflow | `ai/skills/`、`docs/ai-skills.md` | Skill 源码随仓库版本化，负责任务编排；不可复制为各工具私有规范。执行 Agent 可写任务范围，Review Agent 只读；同一工作区内重叠文件只能有一个写入 Agent。 |
 | 样式与响应式 | `src/app/styles`、各模块 `*.module.scss` | 当前只验收最低 1024px 的桌面布局；使用 token、流式容器和模块样式为后续移动端留扩展点，禁止新增全局业务样式或猜测手机视觉。 |
 
 ## 6. AI 友好的写法

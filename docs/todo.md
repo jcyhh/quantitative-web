@@ -3,6 +3,7 @@
 ## 仓库治理
 
 - [ ] 正式 Git 仓库地址和默认分支确定后，创建 GitHub Ruleset（目标分支：默认分支）。要求 Pull Request 合并，并将 `CI / Test, lint and build` 设为必需状态检查；保留合并队列的 `merge_group` 触发支持。
+- [ ] 团队评审职责稳定后，配置 `CODEOWNERS` 与默认分支的最少人工审批要求；在此之前不预设负责人或强制审批数量。
 
 ## 待真实需求确认的基础能力
 

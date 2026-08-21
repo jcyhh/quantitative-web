@@ -10,6 +10,8 @@
 
 核心约束：遵守 Feature-Sliced Design（FSD）的 `app → pages → widgets → features → entities → shared` 分层依赖；业务 slice 仅经根目录 `index.ts` 暴露公共 API；`app` 与 `shared` 使用技术 segments，不按业务 slice 划分。LocalStorage 与 SessionStorage 只能通过 `shared/lib/storage` 访问，违规会阻断 lint 和 build。
 
+本项目的 AI 代码协作工具统一使用 Codex。Codex 开始任何代码改动前，必须从 `ai/skills/` 选择并阅读对应 Skill：业务功能使用 `quant-lab-feature-delivery`，跨切面变更使用 `quant-lab-cross-cutting-change`，已有 diff 的独立只读检查使用 `quant-lab-change-review`。`ai/skills/` 是唯一团队 Skill 源码，不复制到其他工具或个人规则中；Skill 编排流程而不取代本文件、详细文档、lint、测试或 CI。完整协作边界见 [AI Skills 与 Agent 协作](./docs/ai-skills.md)。
+
 包管理器唯一使用 pnpm `10.28.2`。所有项目命令必须使用 `pnpm` 或 `pnpm run`；禁止 npm、yarn、npx、bun。`scripts/enforce-pnpm.mjs` 会阻断错误执行器以及 `package-lock.json`、`yarn.lock` 等非 pnpm 锁文件。新增运行时依赖使用 `pnpm add`，构建/测试依赖使用 `pnpm add -D`，并在同一提交更新 `package.json`、`pnpm-lock.yaml`、文档与 CI；禁止手改 lockfile 或忽略其他锁文件。依赖安装脚本默认不执行；只有 `pnpm-workspace.yaml` 的 `onlyBuiltDependencies` 中已审查的精确包名才能运行。新增白名单必须记录用途和风险，并只用 `pnpm approve-builds <包名>` 审批，禁止全量批准。
 
 TypeScript 使用 strict 模式：禁止 `any`、非空断言和无校验的外部数据断言；所有具名函数与类方法必须标注返回类型。对象契约使用 `interface`，联合/映射/泛型组合使用 `type`；请求 DTO、领域模型与 UI Props 必须分层定义。完整规则见 [TypeScript 规范](./docs/typescript-standards.md)。
