@@ -12,6 +12,12 @@
 
 本项目的 AI 代码协作工具统一使用 Codex。Codex 开始任何代码改动前，必须从 `ai/skills/` 选择并阅读对应 Skill：业务功能使用 `quant-lab-feature-delivery`，跨切面变更使用 `quant-lab-cross-cutting-change`，已有 diff 的独立只读检查使用 `quant-lab-change-review`。`ai/skills/` 是唯一团队 Skill 源码，不复制到其他工具或个人规则中；Skill 编排流程而不取代本文件、详细文档、lint、测试或 CI。完整协作边界见 [AI Skills 与 Agent 协作](./docs/ai-skills.md)。
 
+涉及浏览器、Electron renderer、设备或运行时差异的能力（例如输入、剪贴板、文件、媒体、计时、动画、窗口与系统交互）时，必须先阅读[兼容性契约索引](./docs/compatibility.md)，再读取其中登记的对应契约。不得仅因某个 API 更流行或代码更短而删除既有降级、清理或超时逻辑；若没有已登记契约，不得预设兼容性封装或 lint 禁令。
+
+处理任何意外问题、缺陷或非直观约束时，Codex 必须判断它是否会改变未来任务的实现选择。确认会反复影响协作的经验，按[AI Skills 与 Agent 协作](./docs/ai-skills.md#从问题到团队知识)路由为 lint/测试、模块说明、兼容性契约、ADR 或待办；未经证实的猜测和完整调试流水账不得伪装成团队规则。
+
+每个有公共边界的 FSD slice、`app` 技术 segment、共享能力和共享 UI 必须维护同目录 `README.md`；现有单文件 `shared/lib/format.ts` 使用相邻 `format.md`。说明写职责、公共入口、关键约束、扩展位置和验证方式，不为 `ui`、`model`、资源或空目录机械创建文档。`pnpm run lint:module-docs` 会阻断缺失说明；完整范围见[架构约定](./docs/architecture.md#模块说明)。
+
 包管理器唯一使用 pnpm `10.28.2`。所有项目命令必须使用 `pnpm` 或 `pnpm run`；禁止 npm、yarn、npx、bun。`scripts/enforce-pnpm.mjs` 会阻断错误执行器以及 `package-lock.json`、`yarn.lock` 等非 pnpm 锁文件。新增运行时依赖使用 `pnpm add`，构建/测试依赖使用 `pnpm add -D`，并在同一提交更新 `package.json`、`pnpm-lock.yaml`、文档与 CI；禁止手改 lockfile 或忽略其他锁文件。依赖安装脚本默认不执行；只有 `pnpm-workspace.yaml` 的 `onlyBuiltDependencies` 中已审查的精确包名才能运行。新增白名单必须记录用途和风险，并只用 `pnpm approve-builds <包名>` 审批，禁止全量批准。
 
 TypeScript 使用 strict 模式：禁止 `any`、非空断言和无校验的外部数据断言；所有具名函数与类方法必须标注返回类型。对象契约使用 `interface`，联合/映射/泛型组合使用 `type`；请求 DTO、领域模型与 UI Props 必须分层定义。完整规则见 [TypeScript 规范](./docs/typescript-standards.md)。

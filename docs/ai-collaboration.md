@@ -2,7 +2,7 @@
 
 本项目的 AI 代码协作工具统一使用 Codex。每位成员都应从仓库根目录打开 Codex，让它读取 `AGENTS.md`；任何代码改动前，再由 Codex 阅读与任务匹配的团队 Skill。不得将相同任务交由其他 AI 编码工具执行后再绕过本流程合入。
 
-本项目会长期由多名人工协作者和多种 AI 工具共同维护。本文件的目标是让任一 AI 在**没有聊天记录、没有口头交接**的情况下，仍能定位正确模块、遵守约束、完成最小范围改动并自证结果。
+本项目会长期由多名人工协作者和多个 Codex Agent 共同维护。本文件的目标是让任一新上下文在**没有聊天记录、没有口头交接**的情况下，仍能定位正确模块、遵守约束、完成最小范围改动并自证结果。
 
 ## 1. 必读顺序
 
@@ -16,6 +16,7 @@ AI 开始任何代码任务前，按以下顺序阅读：
 6. 与任务有关的模块 `README.md`、类型、公共入口 `index.ts` 和现有测试。
 7. 涉及环境、仓库治理或未决事项时，再阅读[环境配置](./environment.md)和[待办](./todo.md)。
 8. 选择并阅读匹配的团队 Skill：功能实现读取 `ai/skills/quant-lab-feature-delivery/SKILL.md`；跨切面变更读取 `ai/skills/quant-lab-cross-cutting-change/SKILL.md`；对已有 diff 做独立审查读取 `ai/skills/quant-lab-change-review/SKILL.md`。完整角色边界见 [AI Skills 与 Agent 协作](./ai-skills.md)。
+9. 任务涉及浏览器、Electron renderer、设备或运行时差异时，阅读[兼容性契约索引](./compatibility.md)及其匹配的已登记契约；未触发时不必加载此类文档。
 
 如果任务与现有文档冲突，以用户当前需求为准；AI 必须在最终说明中指出冲突和实际采用的处理方式。
 
@@ -43,6 +44,8 @@ AI 开始任何代码任务前，按以下顺序阅读：
 - 新增环境变量、路由、请求约定、存储键、语言 key 或全局配置。
 - 新增依赖、构建命令、lint 规则、CI 校验或开发前置条件。
 - 改变响应式策略、设计 token、主题或组件样式约束。
+- 发现并确认会长期影响浏览器、Electron renderer、设备或运行时行为的兼容性边界；按[兼容性契约索引](./compatibility.md)更新记录、实现和验证证据。
+- 修复或调查后确认某个非直观问题会改变未来实现选择；按[团队知识路由](./ai-skills.md#从问题到团队知识)将其落到可执行规则、模块说明、兼容性契约、ADR 或待办，而不是只留在聊天、代码注释或提交说明中。
 - 发现尚未确定且会影响后续实现的产品/技术决策。
 
 纯内部重构且公共行为、入口和约束均不变时，可不新增文档；但 AI 的最终说明仍要明确“无需更新文档”的理由。
@@ -52,11 +55,11 @@ AI 开始任何代码任务前，按以下顺序阅读：
 1. **定位**：确认需求属于哪一 FSD 层，找出现有公共能力，列出允许修改的文件范围。
 2. **决策**：信息不足时只提出会改变实现方向的最小问题；不能用假数据或假定量化规则掩盖不确定性。
 3. **实现**：遵守公共入口和依赖方向，不顺带重构无关区域。
-4. **记录**：按第 3 节检查应更新的文档；新模块应补充最小 README 或公共 API 注释。
+4. **记录**：按第 3 节检查应更新的文档；新建或改变有公共边界的模块必须同步更新同目录 README，内容至少包含职责、入口、约束、扩展位置与验证方式；范围和单文件例外见[模块说明](./architecture.md#模块说明)。
 5. **验证**：默认执行 `pnpm run build && pnpm run lint`。涉及 `electron/` 或桌面构建配置时，再执行 `pnpm run desktop:build`；若未执行或失败，必须如实说明原因与影响。
 
 涉及依赖时，唯一执行器是 pnpm。不得使用 npm、yarn、npx 或 bun；运行时依赖执行 `pnpm add`，开发依赖执行 `pnpm add -D`，并同步更新 `package.json` 和 `pnpm-lock.yaml`。依赖安装脚本默认拒绝：只可在审查脚本用途和风险后，用 `pnpm approve-builds <明确包名>` 增加 `pnpm-workspace.yaml` 的精确白名单，禁止全量批准。
-6. **交接**：最终输出必须包含：改了什么、关键路径、验证结果、假设/未决项。不要宣称已完成未执行的部署、提交、推送或接口联调。
+6. **交接**：最终输出必须包含：改了什么、关键路径、验证结果、假设/未决项。若任务触发兼容性契约，还必须说明已读契约、保留或变更的规则、自动验证和待人工复测环境；未触发则明确为“兼容性影响：无”。若发现新的可复用问题经验，说明它的路由位置和验证/执行约束。不要宣称已完成未执行的部署、提交、推送或接口联调。
 
 ## 5. 本项目已登记的基础设施
 
@@ -72,6 +75,7 @@ AI 开始任何代码任务前，按以下顺序阅读：
 | 剪贴板 | `src/shared/lib/clipboard` | 仅使用 `await copyText`；内部固定 `copy-to-clipboard`，返回 `Promise<boolean>`，调用方负责多语言反馈。 |
 | 通知 | `src/shared/notification` | 仅使用 `notification.success/info/warning/error/confirm`；当前是原生对话框临时回退，后续定制 UI 只替换模块内部。 |
 | 文件下载 | `src/shared/lib/download` | 调用方负责内容、MIME、文件名和权限，工具只触发浏览器下载。 |
+| 兼容性契约 | `docs/compatibility.md` 与其登记的领域文档 | 任务触发时先读索引与领域契约；首次确认的长期兼容性边界必须同时沉淀实现理由、自动化验证和必要的人工复测环境。 |
 | 多语言 | `src/shared/i18n` | `zh-CN` 与 `en-US` 的同名 key，禁止只补一种语言。 |
 | 环境配置 | `.env.example`、`.env.development.example`、`src/shared/config` | 类型声明、环境文档；开发者从模板创建被忽略的 `.env.development`；浏览器可见变量才用 `VITE_` 前缀。 |
 | Vite 构建 | `vite.config.ts`、`docs/environment.md` | 仅允许 development/staging/production；`VITE_DEPLOY_ENV` 必须与 mode 一致。不要擅自配置 base、target、sourcemap、manifest、手动分包或 PWA。 |
@@ -81,6 +85,7 @@ AI 开始任何代码任务前，按以下顺序阅读：
 | PWA 预留 | `src/shared/lib/pwa`、`docs/pwa.md` | 当前只提供安装生命周期 Hook；不得注册 Service Worker、添加 manifest、缓存策略或入口，直到单独立项确认。 |
 | Electron 桌面壳 | `electron/`、`electron-builder.yml` | React 仍在 `src` 按 FSD 组织；桌面能力只经 preload 的具名方法和已校验 sender 的 IPC 暴露。保持 `contextIsolation` 与 sandbox，禁止 renderer Node integration、通用 IPC 通道和未验证的外部导航。扩展步骤见 `electron/README.md`；安装包仅由 `desktop:package*` 生成到被忽略的 `release/`。 |
 | 团队 AI workflow | `ai/skills/`、`docs/ai-skills.md` | Skill 源码随仓库版本化，负责任务编排；不可复制为各工具私有规范。执行 Agent 可写任务范围，Review Agent 只读；同一工作区内重叠文件只能有一个写入 Agent。 |
+| 模块说明 | 受管模块根目录的 `README.md`，或 `shared/lib/format.md` | 说明职责、入口、约束、扩展位置与验证方式；新增或改变公共边界时同步更新，`lint:module-docs` 会校验。 |
 | 样式与响应式 | `src/app/styles`、各模块 `*.module.scss` | 当前只验收最低 1024px 的桌面布局；使用 token、流式容器和模块样式为后续移动端留扩展点，禁止新增全局业务样式或猜测手机视觉。 |
 
 ## 6. AI 友好的写法
