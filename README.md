@@ -31,7 +31,7 @@ src/
 
 所有协作者（包括 AI）应遵守 [docs/development-standards.md](docs/development-standards.md)、[docs/typescript-standards.md](docs/typescript-standards.md) 与 [docs/testing-standards.md](docs/testing-standards.md)。AI 开发的必读顺序、文档最低信息标准和基础设施入口见 [docs/ai-collaboration.md](docs/ai-collaboration.md)。
 
-团队统一使用 Codex 进行 AI 代码协作。共享 workflow 位于 `ai/skills/`，Codex 在改代码前必须阅读 `AGENTS.md` 与匹配的 Skill；其与 Agent、Markdown 规范、lint 和 CI 的分工见 [docs/ai-skills.md](docs/ai-skills.md)。
+团队统一使用 Codex 进行 AI 代码协作。共享 workflow 位于 `.agents/skills/`，Codex 在改代码前必须阅读 `AGENTS.md` 与匹配的 Skill；其与 Agent、Markdown 规范、lint 和 CI 的分工见 [docs/ai-skills.md](docs/ai-skills.md)。
 
 ## 可用命令
 

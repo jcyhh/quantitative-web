@@ -1,0 +1,7 @@
+interface:
+  display_name: "Quant Lab 代码变更审查"
+  short_description: "完成实现后独立检查现有 Quant Lab 代码改动"
+  default_prompt: "Use $quant-lab-change-review to review the current Quant Lab diff."
+
+policy:
+  allow_implicit_invocation: true

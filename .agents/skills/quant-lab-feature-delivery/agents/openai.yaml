@@ -1,0 +1,7 @@
+interface:
+  display_name: "Quant Lab 业务功能开发"
+  short_description: "写或修复具体的 Quant Lab 业务功能与页面逻辑"
+  default_prompt: "Use $quant-lab-feature-delivery to implement a scoped Quant Lab feature."
+
+policy:
+  allow_implicit_invocation: true

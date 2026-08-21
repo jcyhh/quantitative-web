@@ -13,7 +13,8 @@ Use this skill when a change affects more than its immediate implementation modu
 2. List the source of truth, consumers, public import/configuration entry, documentation and verification command before editing.
 3. If the change crosses browser, Electron renderer, device or runtime boundaries, read `docs/compatibility.md` and every relevant registered contract before choosing an API or changing a fallback.
 4. Record a decision in `docs/decisions/` when the change establishes a long-lived cross-module direction. Do not create an ADR for a reversible internal detail.
-5. When investigation reveals a confirmed, non-obvious problem that will influence future changes, route it through `docs/ai-skills.md#从问题到团队知识` and include its enforcement or verification evidence in the impact map.
+5. If the public change includes React renderer state, Effects, shared Hooks, lists, charts, client loading or code-splitting boundaries, read `quant-lab-react-engineering` before designing the contract.
+6. When investigation reveals a confirmed, non-obvious problem that will influence future changes, route it through `docs/ai-skills.md#从问题到团队知识` and include its enforcement or verification evidence in the impact map.
 
 ## Required impact checks
 

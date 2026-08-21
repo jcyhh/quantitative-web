@@ -10,7 +10,7 @@
 
 核心约束：遵守 Feature-Sliced Design（FSD）的 `app → pages → widgets → features → entities → shared` 分层依赖；业务 slice 仅经根目录 `index.ts` 暴露公共 API；`app` 与 `shared` 使用技术 segments，不按业务 slice 划分。LocalStorage 与 SessionStorage 只能通过 `shared/lib/storage` 访问，违规会阻断 lint 和 build。
 
-本项目的 AI 代码协作工具统一使用 Codex。Codex 开始任何代码改动前，必须从 `ai/skills/` 选择并阅读对应 Skill：业务功能使用 `quant-lab-feature-delivery`，跨切面变更使用 `quant-lab-cross-cutting-change`，已有 diff 的独立只读检查使用 `quant-lab-change-review`。`ai/skills/` 是唯一团队 Skill 源码，不复制到其他工具或个人规则中；Skill 编排流程而不取代本文件、详细文档、lint、测试或 CI。完整协作边界见 [AI Skills 与 Agent 协作](./docs/ai-skills.md)。
+本项目的 AI 代码协作工具统一使用 Codex。Codex 开始任何代码改动前，必须从 `.agents/skills/` 选择并阅读对应 Skill：业务功能使用 `quant-lab-feature-delivery`，跨切面变更使用 `quant-lab-cross-cutting-change`，已有 diff 的独立只读检查使用 `quant-lab-change-review`。涉及 TSX 运行逻辑、Hook、状态、Effect、列表、图表、客户端加载或组件重构时，还必须读取 `quant-lab-react-engineering`。`.agents/skills/` 是唯一团队 Skill 源码，不复制到其他工具或个人规则中；Skill 编排流程而不取代本文件、详细文档、lint、测试或 CI。完整协作边界见 [AI Skills 与 Agent 协作](./docs/ai-skills.md)。
 
 涉及浏览器、Electron renderer、设备或运行时差异的能力（例如输入、剪贴板、文件、媒体、计时、动画、窗口与系统交互）时，必须先阅读[兼容性契约索引](./docs/compatibility.md)，再读取其中登记的对应契约。不得仅因某个 API 更流行或代码更短而删除既有降级、清理或超时逻辑；若没有已登记契约，不得预设兼容性封装或 lint 禁令。
 

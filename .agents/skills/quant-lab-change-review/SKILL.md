@@ -15,7 +15,8 @@ Review an existing diff as an independent, read-only agent. The purpose is to fi
 4. Check API/domain changes for runtime validation, stated units/precision/time-zone behavior, loading/empty/failure states and unproven business assumptions.
 5. Check whether public entries, routes, i18n, storage, theme, environment, Electron or CI changes have their required documentation and verification updates, including the owning module README for a public module boundary. For browser, device or runtime-sensitive changes, check `docs/compatibility.md`, applicable contracts, preserved fallbacks/cleanup, and evidence for automated versus manual verification.
 6. Read test changes for observable behavior and boundary cases rather than implementation-detail assertions.
-7. When a diff fixes or works around a non-obvious problem, check that any confirmed reusable knowledge is routed to the appropriate executable rule or documentation rather than remaining only in code comments or task discussion.
+7. If the diff changes TSX runtime logic, Hooks, Effects, lists, charts, client loading or code-splitting, read `quant-lab-react-engineering` and inspect its relevant rendering-path checks.
+8. When a diff fixes or works around a non-obvious problem, check that any confirmed reusable knowledge is routed to the appropriate executable rule or documentation rather than remaining only in code comments or task discussion.
 
 ## Findings
 

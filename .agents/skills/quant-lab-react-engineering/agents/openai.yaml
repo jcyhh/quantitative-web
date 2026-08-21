@@ -1,0 +1,6 @@
+interface:
+  display_name: "Quant Lab React 渲染与性能"
+  short_description: "优化 React 状态、渲染、列表与客户端加载"
+  default_prompt: "Use $quant-lab-react-engineering to implement or review Quant Lab React rendering logic."
+policy:
+  allow_implicit_invocation: true

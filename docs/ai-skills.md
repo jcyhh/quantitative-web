@@ -12,24 +12,27 @@
 | --- | --- | --- |
 | 不可违反的短规则 | `AGENTS.md` | 所有人工与 AI 协作者都必须遵守的入口约束。 |
 | 详细规范 | `docs/*.md`、模块 README、ADR | 说明背景、边界、扩展步骤与未决决策。 |
-| 团队 Skill | `ai/skills/<name>/SKILL.md` | 将一类任务的读取、判断、实施与交接编排为可复用流程。 |
+| 团队 Skill | `.agents/skills/<name>/SKILL.md` | 将一类任务的读取、判断、实施与交接编排为可复用流程。 |
 | 可执行策略 | lint、测试、CI | 阻断可机械判断的违规。 |
 
 用户当前需求优先于上述所有项目规则；冲突必须在交接中说明，不能静默绕过。
 
 ## 团队 Skill
 
-`ai/skills/` 是唯一可提交、可审查的团队 Skill 源码。每个目录必须含有与目录同名的 YAML frontmatter `name` 和非空 `description` 的 `SKILL.md`；`pnpm run lint:ai-skills` 会验证此结构，并由 `pnpm run lint` 与 CI 运行。
+`.agents/skills/` 是唯一可提交、可审查的团队 Skill 源码。每个目录必须含有与目录同名的 YAML frontmatter `name` 和非空 `description` 的 `SKILL.md`，以及 `agents/openai.yaml`。后者提供 Codex UI 的显示名、简介、带 `$<skill-name>` 的默认提示词，并保持 `allow_implicit_invocation: true`，使 Skill 同时可自动匹配与显式调用；`pnpm run lint:ai-skills` 会验证此结构，并由 `pnpm run lint` 与 CI 运行。
 
 | Skill | 使用场景 | 不负责 |
 | --- | --- | --- |
-| `quant-lab-feature-delivery` | 单一业务功能、页面逻辑或缺陷修复 | 跨切面基础设施迁移、只读审查 |
-| `quant-lab-cross-cutting-change` | 路由、i18n、主题、存储、环境、依赖、CI、共享能力、Electron bridge | 普通局部功能实现 |
-| `quant-lab-change-review` | 已存在 diff 的独立只读审查 | 修改文件、代替 lint/CI |
+| `quant-lab-feature-delivery` | 写或修复具体业务功能、页面逻辑与局部缺陷 | 改造公共能力/配置、只读审查 |
+| `quant-lab-cross-cutting-change` | 封装或改造公共模块、路由、配置、共享能力与 Electron bridge | 普通局部业务功能实现 |
+| `quant-lab-change-review` | 实现完成后对已有 diff 进行独立只读审查 | 修改文件、代替 lint/CI |
+| `quant-lab-react-engineering` | React 状态、Effect、列表、图表、客户端加载、组件重构与渲染性能判断 | 纯样式/文案/非 renderer 配置；替代业务 Skill、性能测量或 lint |
 
-所有代码任务统一在 Codex 中执行。成员从仓库根目录打开 Codex；Codex 先遵循 `AGENTS.md`，再按任务读取当前分支的匹配 Skill。`ai/skills/` 是唯一团队源码，禁止复制到个人 Codex 配置、其他 AI 工具或聊天提示词中形成第二份可独立修改的规则。Codex 的本机安装 Skill 可以提供通用能力，但不能覆盖本仓库规则。
+所有代码任务统一在 Codex 中执行。成员从仓库根目录打开 Codex；Codex 先遵循 `AGENTS.md`，再按任务读取当前分支的匹配 Skill。`.agents/skills/` 是唯一团队源码，禁止复制到个人 Codex 配置、其他 AI 工具或聊天提示词中形成第二份可独立修改的规则。Codex 的本机安装 Skill 可以提供通用能力，但不能覆盖本仓库规则。
 
 不要将外部下载的 skill 直接视为团队规范。先在隔离环境评估其触发范围、工具权限、脚本行为和与本仓库规则的冲突；确认后再以可审查的提交方式引入或提炼。
+
+`quant-lab-react-engineering` 参考 Vercel Labs 的 `react-best-practices`，但只提炼适用于本仓库 Vite 客户端渲染器的状态、Effect、重渲染、异步依赖、列表和按需加载判断。Next.js、React Server Components、服务端缓存、第三方请求缓存、Tailwind/shadcn 建议，以及与 FSD 根入口冲突的导入建议均不随之引入。来源、取舍与后续更新原则见 [0005: React Skill 选型](./decisions/0005-react-skill-curation.md)。
 
 ## Agent 协作边界
 

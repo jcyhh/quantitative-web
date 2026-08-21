@@ -1,7 +1,7 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
-const skillsDirectory = resolve('ai/skills')
+const skillsDirectory = resolve('.agents/skills')
 const errors = []
 
 function reportError(message) {
@@ -10,6 +10,7 @@ function reportError(message) {
 
 function validateSkill(skillName) {
   const skillPath = resolve(skillsDirectory, skillName, 'SKILL.md')
+  const metadataPath = resolve(skillsDirectory, skillName, 'agents', 'openai.yaml')
 
   if (!existsSync(skillPath)) {
     reportError(`${skillName}: missing SKILL.md`)
@@ -32,16 +33,36 @@ function validateSkill(skillName) {
   if (name !== null && name[1].length > 64) reportError(`${skillName}: name must be 64 characters or fewer`)
   if (description === null || description[1].trim().length === 0) reportError(`${skillName}: frontmatter requires a non-empty description`)
   if (content.includes('TODO') || content.includes('<placeholder>')) reportError(`${skillName}: remove unfinished placeholders before committing`)
+
+  if (!existsSync(metadataPath)) {
+    reportError(`${skillName}: missing agents/openai.yaml UI metadata`)
+    return
+  }
+
+  const metadata = readFileSync(metadataPath, 'utf8')
+  const displayName = metadata.match(/^\s{2}display_name:\s*"([^"\n]+)"\s*$/m)
+  const shortDescription = metadata.match(/^\s{2}short_description:\s*"([^"\n]+)"\s*$/m)
+  const defaultPrompt = metadata.match(/^\s{2}default_prompt:\s*"([^"\n]+)"\s*$/m)
+  const implicitInvocation = metadata.match(/^\s{2}allow_implicit_invocation:\s*(true|false)\s*$/m)
+
+  if (displayName === null) reportError(`${skillName}: UI metadata requires a quoted interface.display_name`)
+  if (shortDescription === null) reportError(`${skillName}: UI metadata requires a quoted interface.short_description`)
+  if (defaultPrompt === null || !defaultPrompt[1].includes(`$${skillName}`)) {
+    reportError(`${skillName}: UI metadata default_prompt must mention $${skillName}`)
+  }
+  if (implicitInvocation === null || implicitInvocation[1] !== 'true') {
+    reportError(`${skillName}: UI metadata must keep policy.allow_implicit_invocation true`)
+  }
 }
 
 if (!existsSync(skillsDirectory)) {
-  reportError('Missing ai/skills directory')
+  reportError('Missing .agents/skills directory')
 } else {
   const skillDirectories = readdirSync(skillsDirectory, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
     .map((entry) => entry.name)
 
-  if (skillDirectories.length === 0) reportError('ai/skills must contain at least one skill')
+  if (skillDirectories.length === 0) reportError('.agents/skills must contain at least one skill')
   for (const skillName of skillDirectories) validateSkill(skillName)
 }
 

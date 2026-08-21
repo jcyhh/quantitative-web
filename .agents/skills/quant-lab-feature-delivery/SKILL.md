@@ -14,7 +14,8 @@ Use this skill to deliver one scoped user-facing capability. It coordinates exis
 3. Classify the work: user action belongs in `features`, stable domain data in `entities`, route composition in `pages`, reusable composite UI in `widgets`, and domain-neutral infrastructure in `shared`.
 4. Search for an existing public capability before creating one. Import other slices only through their root `index.ts`.
 5. Classify compatibility impact. If the task touches browser, Electron renderer, device or runtime-dependent behavior, read `docs/compatibility.md` and every relevant registered contract before designing the implementation. Do not load compatibility documents for unrelated work.
-6. During investigation and after a fix, decide whether a discovered problem is reusable team knowledge: it must be confirmed, non-obvious and likely to change a future implementation choice. Route it through `docs/ai-skills.md#从问题到团队知识`; do not preserve ordinary debugging history as a rule.
+6. If the task changes TSX runtime logic, Hooks, state, Effects, lists, charts, client-side loading, code-splitting boundaries or component structure, read `quant-lab-react-engineering` before implementation. Do not load it for pure copy, static SCSS or non-renderer configuration.
+7. During investigation and after a fix, decide whether a discovered problem is reusable team knowledge: it must be confirmed, non-obvious and likely to change a future implementation choice. Route it through `docs/ai-skills.md#从问题到团队知识`; do not preserve ordinary debugging history as a rule.
 
 ## Make decisions deliberately
 
