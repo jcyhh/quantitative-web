@@ -42,7 +42,7 @@ TypeScript 使用 strict 模式：禁止 `any`、非空断言和无校验的外�
 
 `.env.development` 是每位开发者本地文件，必须忽略且不得提交。首次拉取代码后从 `.env.development.example` 创建；模板更新时手工合并，不覆盖本地后端配置。`VITE_DEPLOY_ENV=development` 必须在本地开发文件中，Vite 会校验它与 mode 一致；完整步骤见 [环境配置](./docs/environment.md)。
 
-构建输出按部署环境隔离：`dist/staging`、`dist/production`。开发环境只运行 Vite 开发服务器，不允许生成部署包。JS、CSS、图片和字体等构建资源必须保留 `[name]-[hash]` 文件名；部署端须让 `index.html` 使用短缓存/`no-cache`，让 `assets/*` 使用长期 `immutable` 缓存。`public/` 不带 hash，只可放固定 URL 的发布资源。详见 [环境配置](./docs/environment.md#构建目录与缓存)。
+Web 构建输出按部署环境隔离：`dist/staging`、`dist/production`。开发环境只运行 Vite 开发服务器，不允许生成部署包。Electron 主进程构建输出固定为 `dist/electron`，安装包输出固定为被忽略的 `release/`，不得混入 Web 部署产物。JS、CSS、图片和字体等构建资源必须保留 `[name]-[hash]` 文件名；部署端须让 `index.html` 使用短缓存/`no-cache`，让 `assets/*` 使用长期 `immutable` 缓存。`public/` 不带 hash，只可放固定 URL 的发布资源。详见 [环境配置](./docs/environment.md#构建目录与缓存)。
 
 Vite mode 仅允许 `development`、`staging`、`production`；development 只可用于开发服务器，staging/production 才可构建，且 `VITE_DEPLOY_ENV` 必须与 mode 一致，配置会立即阻断不一致构建。`base`、浏览器 target、sourcemap、manifest、手动分包和 PWA 都需要明确部署或产品条件，禁止为了“完整”预配；完整清单见 [环境配置](./docs/environment.md#暂不预设的-vite-配置)。
 

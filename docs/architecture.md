@@ -2,6 +2,8 @@
 
 项目采用 [Feature-Sliced Design（FSD）](https://fsd.how/docs/reference/layers/) 分层。它以影响范围和业务领域组织前端代码，适合长期多人协作；不引入已废弃的 `processes` 层。
 
+Electron 主进程与 preload 位于仓库根目录 `electron/`，它们是加载 FSD React 渲染层的桌面宿主，不属于 `src` 内任一 FSD layer。业务逻辑、领域类型、页面和浏览器可用基础能力仍归入 `src` 的 FSD 分层；禁止将 Electron API 直接导入 renderer 代码。
+
 标准层级从高到低为：`app → pages → widgets → features → entities → shared`。模块只能导入严格更低层的模块；同层不同业务 slice 不得互相导入。`app` 与 `shared` 是例外：它们不按业务 slice 划分，内部的技术 segments 可以互相引用。
 
 路由使用 React Router 的 `createBrowserRouter`，即 HTML5 History 模式。生产部署必须为前端路由提供 `index.html` 回退，避免直接访问子路径时出现 404。

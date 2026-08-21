@@ -50,7 +50,7 @@ AI 开始任何代码任务前，按以下顺序阅读：
 2. **决策**：信息不足时只提出会改变实现方向的最小问题；不能用假数据或假定量化规则掩盖不确定性。
 3. **实现**：遵守公共入口和依赖方向，不顺带重构无关区域。
 4. **记录**：按第 3 节检查应更新的文档；新模块应补充最小 README 或公共 API 注释。
-5. **验证**：默认执行 `pnpm run build && pnpm run lint`。若未执行或失败，必须如实说明原因与影响。
+5. **验证**：默认执行 `pnpm run build && pnpm run lint`。涉及 `electron/` 或桌面构建配置时，再执行 `pnpm run desktop:build`；若未执行或失败，必须如实说明原因与影响。
 
 涉及依赖时，唯一执行器是 pnpm。不得使用 npm、yarn、npx 或 bun；运行时依赖执行 `pnpm add`，开发依赖执行 `pnpm add -D`，并同步更新 `package.json` 和 `pnpm-lock.yaml`。依赖安装脚本默认拒绝：只可在审查脚本用途和风险后，用 `pnpm approve-builds <明确包名>` 增加 `pnpm-workspace.yaml` 的精确白名单，禁止全量批准。
 6. **交接**：最终输出必须包含：改了什么、关键路径、验证结果、假设/未决项。不要宣称已完成未执行的部署、提交、推送或接口联调。
@@ -76,6 +76,7 @@ AI 开始任何代码任务前，按以下顺序阅读：
 | LocalStorage | `src/shared/config/app.ts`、`src/shared/lib/storage` | `storageKeys`、`StorageSchema` 与 storage 封装；业务代码禁止直连 Web Storage API。 |
 | 主题 | `src/shared/config/theme.ts`、`src/shared/theme`、`src/app/styles/_colors.scss`、`src/app/styles/_tokens.scss` | 所有主题不变的原始色只放 `_colors.scss` 的 `--color-static-*`；主题语义色只放 `_tokens.scss`。注册主题名、补齐完整 token 与中英文名称；切换必须使用 `useThemeTransition`，组件中禁止硬编码颜色、以主题名分支或直接调用 View Transitions API。 |
 | PWA 预留 | `src/shared/lib/pwa`、`docs/pwa.md` | 当前只提供安装生命周期 Hook；不得注册 Service Worker、添加 manifest、缓存策略或入口，直到单独立项确认。 |
+| Electron 桌面壳 | `electron/`、`electron-builder.yml` | React 仍在 `src` 按 FSD 组织；桌面能力只经 preload 的具名方法和已校验 sender 的 IPC 暴露。保持 `contextIsolation` 与 sandbox，禁止 renderer Node integration、通用 IPC 通道和未验证的外部导航。扩展步骤见 `electron/README.md`；安装包仅由 `desktop:package*` 生成到被忽略的 `release/`。 |
 | 样式与响应式 | `src/app/styles`、各模块 `*.module.scss` | 当前只验收最低 1024px 的桌面布局；使用 token、流式容器和模块样式为后续移动端留扩展点，禁止新增全局业务样式或猜测手机视觉。 |
 
 ## 6. AI 友好的写法

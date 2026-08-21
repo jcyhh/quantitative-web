@@ -63,6 +63,8 @@ app → pages → widgets → features → entities → shared
 - 路由使用语义化资源路径：资源 ID 必须放在领域路径参数中，如 `/strategies/:strategyId`，不能使用 `?id=` 或通用 `/detail/:id`。查询参数仅用于筛选、排序、分页、Tab 等可选视图状态；当前无真实需求时不得预建查询状态模块。
 - 组件保持单一职责。出现多个独立状态区、多个请求或多个业务动作时，应拆分组件或抽为 feature。
 - 默认使用本地状态；引入全局状态库前，先证明跨页面共享、缓存或复杂协调确有必要，并记录决策。
+- Electron 主进程与 preload 仅放在仓库根目录 `electron/`，不属于 FSD renderer layer。React/业务模块禁止直接导入 `electron`、Node.js 或任意 `window` 桌面桥接对象；确需桌面能力时，先在 `electron/README.md` 定义受限 IPC 契约，再在 `shared/lib/<capability>` 增加浏览器安全的公共入口。
+- Electron renderer 必须保持 `contextIsolation: true`、`sandbox: true`、`nodeIntegration: false`。preload 只能通过 context bridge 暴露按用途命名的方法，禁止透传 `ipcRenderer`、Node 模块或任意 IPC channel；main process 必须验证 IPC sender，并默认拒绝未受信任导航和新窗口。
 - React key 必须稳定，不使用数组下标作为可变列表 key。
 - 禁止新建平铺的 `src/hooks`。Hook 按 FSD 归属：业务 Hook 放在所属 `features`/`entities`/`widgets`/`pages` 的 `model` 或 `ui`，跨业务技术能力放在命名明确的 `shared/lib/<capability>` 或 `shared/<segment>`。完整判定表见 [架构约定](./architecture.md#hook-归属规则)。
 - 目录只承载一个可命名的概念。实现、样式、类型、测试、说明和 `index.ts` 可作为同一概念的配套文件共存；出现两个可独立演进的能力时必须立即创建子目录，禁止继续堆入 `hooks`、`utils`、`components`、`services`、`types` 等收纳目录。完整示例见 [目录粒度规则](./architecture.md#目录粒度规则)。
@@ -169,9 +171,9 @@ src/app/styles/
 - 提交保持小而完整，格式：`type(scope): 简短说明`，例如 `feat(strategy): add backtest form`。
 - 不提交 `dist`、本地环境文件、密钥、调试输出或无关格式化改动。
 - 合并前说明：改了什么、为什么、如何验证、是否有后续事项。涉及共享契约时明确提醒其他成员。
-- GitHub CI 会在推送和 PR 上执行 `pnpm install --frozen-lockfile`、lint、生产构建和预发布构建。所有合并目标分支都应启用该 CI workflow 的必需状态检查，未通过不得合并。
+- GitHub CI 会在推送和 PR 上执行 `pnpm install --frozen-lockfile`、lint、测试、生产/预发布 Web 构建和 Electron host 编译；桌面安装包、签名与 notarization 仅能由具有产品凭据的独立发布工作流在相应平台执行。所有合并目标分支都应启用该 CI workflow 的必需状态检查，未通过不得合并。
 - 新增依赖前先确认没有现有能力或浏览器标准 API 可复用；运行时依赖使用 `pnpm add <package>`，开发依赖使用 `pnpm add -D <package>`。同一提交必须包含 `package.json`、`pnpm-lock.yaml`、用途说明和验证结果；禁止手改 lockfile、提交或忽略 `package-lock.json`、`yarn.lock`、`bun.lock*`。
-- 依赖安装脚本默认拒绝执行。`pnpm-workspace.yaml` 的 `onlyBuiltDependencies` 是唯一白名单；当前仅允许 `esbuild`（Vite 构建）和 `@parcel/watcher`（开发文件监听）。如新增依赖要求安装期脚本，先审查脚本、记录包名/用途/风险，再执行 `pnpm approve-builds <明确包名>` 并提交该配置改动；禁止 `pnpm approve-builds` 的全量批准或手工放宽白名单。
+- 依赖安装脚本默认拒绝执行。`pnpm-workspace.yaml` 的 `onlyBuiltDependencies` 是唯一白名单；当前仅允许 `esbuild`（Vite 构建）和 `@parcel/watcher`（开发文件监听）。Electron-builder 的 `electron-winstaller` 保持未批准：当前 Windows 目标为 NSIS，不需要该 Squirrel 辅助包。若未来改用 Squirrel，须先审查其下载/执行内容、记录供应链风险，再执行 `pnpm approve-builds electron-winstaller` 并提交白名单改动；禁止 `pnpm approve-builds` 的全量批准或手工放宽白名单。
 - AI 只能在用户明确要求时执行提交、推送、创建 PR 或修改远端设置。
 
 ## 8. AI 协作者执行协议

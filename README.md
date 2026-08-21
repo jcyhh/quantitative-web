@@ -15,13 +15,14 @@ pnpm run dev
 ## 目录约定
 
 ```
+electron/         # Electron 主进程与受限桌面桥接，不属于 React FSD 层
 src/
-├── app/         # 应用启动、路由与全局配置
-├── entities/    # 业务实体及其模型
-├── features/    # 可独立演进的业务功能
-├── pages/       # 路由级页面
-├── shared/      # 无业务归属的公共能力
-└── widgets/     # 可跨页面复用的界面区块
+├── app/          # 应用启动、路由与全局配置
+├── entities/     # 业务实体及其模型
+├── features/     # 可独立演进的业务功能
+├── pages/        # 路由级页面
+├── shared/       # 无业务归属的公共能力
+└── widgets/      # 可跨页面复用的界面区块
 ```
 
 项目采用 Feature-Sliced Design（FSD）；详细分层与依赖规则见 [docs/architecture.md](docs/architecture.md)。
@@ -35,14 +36,18 @@ src/
 - `pnpm run dev`：启动本地开发服务器
 - `pnpm run build`：类型检查并构建生产包到 `dist/production/`
 - `pnpm run build:staging`：构建预发布包到 `dist/staging/`
+- `pnpm run desktop:dev`：以 Electron 窗口调试本地 React 应用
+- `pnpm run desktop:build`：构建生产 Web 渲染层和 Electron 主进程
+- `pnpm run desktop:package`：按当前系统平台生成桌面安装包到 `release/`
+- `pnpm run desktop:package:mac` / `pnpm run desktop:package:win`：请求 macOS DMG 或 Windows NSIS 产物；正式跨平台发布应在对应平台 CI 构建
 - `pnpm run lint`：执行 TypeScript/React 与 SCSS 规范检查
 - `pnpm run test`：执行基础能力单元测试
 
 项目唯一包管理器为 pnpm `10.28.2`。禁止使用 npm、yarn、npx、bun 或其他锁文件执行项目命令；执行守卫会阻断错误包管理器及 `package-lock.json`、`yarn.lock` 等混入。新增依赖使用 `pnpm add <package>` 或 `pnpm add -D <package>`，并在同一提交更新 `package.json` 与 `pnpm-lock.yaml`。
 
-pnpm 默认不执行依赖的安装期脚本，只有已审查且记录在 `pnpm-workspace.yaml` 的包可执行。目前仅允许 Vite 所需的 `esbuild` 和文件监听所需的 `@parcel/watcher`。新增白名单前必须说明包名、脚本用途与风险，并使用 `pnpm approve-builds <明确包名>`；禁止使用全量批准命令。
+pnpm 默认不执行依赖的安装期脚本，只有已审查且记录在 `pnpm-workspace.yaml` 的包可执行。目前仅允许 Vite 所需的 `esbuild` 和文件监听所需的 `@parcel/watcher`。Electron-builder 带入的 `electron-winstaller` 是未获批准的 Squirrel Windows 辅助包；当前使用 NSIS 目标，不能因安装警告而批准它。新增白名单前必须说明包名、脚本用途与风险，并使用 `pnpm approve-builds <明确包名>`；禁止使用全量批准命令。
 
-GitHub Actions 会在推送和 PR 中执行 lint、生产构建与预发布构建；工作流见 `.github/workflows/ci.yml`。
+GitHub Actions 会在推送和 PR 中执行 lint、测试、生产/预发布 Web 构建和 Electron host 编译；工作流见 `.github/workflows/ci.yml`。带签名的桌面安装包由单独的发布任务在相应平台构建。
 
 ## 基础能力
 
@@ -57,6 +62,7 @@ GitHub Actions 会在推送和 PR 中执行 lint、生产构建与预发布构�
 - 精确运算：从 `src/shared/lib/decimal` 使用 `decimalAdd`、`decimalSubtract`、`decimalMultiply`、`decimalDivide`；输入和结果优先使用字符串，业务公式仍留在对应领域模块。
 - 普通数值运算：仅 UI 几何、动画等非金融场景可从 `src/shared/lib/number` 使用 `numberAdd`、`numberSubtract`、`numberMultiply`、`numberDivide`；禁止用于金额、价格、数量和收益。
 - 响应式样式：使用 SCSS + CSS Modules。全局 token、断点与重置在 `src/app/styles`；业务模块就近维护 `*.module.scss`。当前仅验收最低 1024px 的桌面端，并在 1280px 做紧凑桌面布局；使用流式容器和弹性栅格为后续移动端适配留出空间。设计稿常规尺寸可直接写 px。
+- 桌面应用：Electron 壳位于 `electron/`，以 `quantlab://` 本地协议加载 `dist/production/` 的同一套 React SPA。主进程默认开启 context isolation 与 sandbox、关闭 renderer Node integration；桌面 API 仅可通过受限 preload + IPC 增加，完整扩展步骤见 [electron/README.md](electron/README.md)。
 
 环境配置与本地 API 联调见 [docs/environment.md](docs/environment.md)。
 

@@ -28,6 +28,8 @@ cp .env.development.example .env.development
 | --- | --- | --- |
 | `pnpm run build:staging` | `staging` | `dist/staging/` |
 | `pnpm run build` / `pnpm run build:production` | `production` | `dist/production/` |
+| `pnpm run desktop:build` | production renderer + Electron host | `dist/production/`、`dist/electron/` |
+| `pnpm run desktop:package` | current host platform installer | `release/` |
 
 JS 入口、动态 chunk、CSS、图片、字体等经 Vite 构建图处理的静态资源统一输出到 `dist/<mode>/assets/`，文件名固定为 `[name]-[hash][extname]`。内容变化会改变 hash，因此部署端可以为 `assets/` 设置长期不可变缓存。
 
@@ -38,6 +40,14 @@ JS 入口、动态 chunk、CSS、图片、字体等经 Vite 构建图处理的�
 3. `public/` 的文件会被原样复制，不带 Vite hash；只放固定 URL 资源，并按业务需要设置保守缓存或自行做版本管理。
 
 前端构建只能生成可缓存的文件名，不能替代 CDN、Nginx 或对象存储的 HTTP 缓存响应头配置。上线环境必须由部署配置落实上述响应头。
+
+## Electron 桌面构建
+
+Electron 复用 `dist/production/` 中的 React SPA，并将 `electron/` 编译为 `dist/electron/` 的主进程与 preload 脚本。`pnpm run desktop:dev` 运行本地 Vite 开发服务器并在 Electron 窗口中加载它；`pnpm run desktop:build` 只生成可供打包的中间产物；`pnpm run desktop:package` 使用 electron-builder 在被忽略的 `release/` 中生成当前平台的安装包。
+
+`desktop:package:mac` 与 `desktop:package:win` 分别声明目标格式，但代码签名、macOS notarization、Windows 签名和跨平台构建环境均未配置。正式发布应在对应操作系统的 CI 上构建，并由发布任务安全注入产品拥有的签名凭据；不得提交证书、私钥、账户或更新服务密钥。
+
+桌面运行时没有 Vite 开发代理；目前生产配置的 `/api` 依赖 Web 同源网关。接入需要调用后端的桌面功能前，必须先确定桌面 API 基址、认证会话和网络策略，并作为单独环境契约实现，不能在 Electron 主进程或前端代码中硬编码服务器地址。
 
 ## 暂不预设的 Vite 配置
 

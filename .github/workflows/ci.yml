@@ -49,3 +49,6 @@ jobs:
 
       - name: Build staging bundle
         run: pnpm run build:staging
+
+      - name: Build Electron host
+        run: pnpm run desktop:build:main
