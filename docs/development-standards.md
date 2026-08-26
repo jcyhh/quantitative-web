@@ -39,6 +39,8 @@ app → pages → widgets → features → entities → shared
 
 `src` 中未引用资源通常不会进入 Vite 产物，但仍必须在替换/删除功能的同一任务清理，不能当作“以后可能使用”的仓库缓存。`public/` 中所有文件都会原样进入部署产物，只能存放有明确固定 URL 用途的发布资源；完整构建与清理规则见 [资源构建与清理](./architecture.md#资源构建与清理)。
 
+大型、稳定且不再承担设计母版职责的静态 PNG，可由开发者显式执行 `pnpm run assets:optimize` 迁移为更小的 WebP。该命令只处理 `src/**/assets` 中至少 512 KiB、非 APNG、可安全改写静态引用且确实缩小的 PNG；它会改写 Git 工作区，必须人工检查视觉效果和 diff 后提交。`pnpm run build`、CI 和 Vite plugin 不得自动执行迁移，且不得处理 `public/`、动态图路径、小图、GIF、SVG 或既有 WebP。
+
 ## 3. 业务功能落位
 
 实现新需求前，先按下列问题判断位置：

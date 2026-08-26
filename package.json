@@ -23,12 +23,13 @@
     "desktop:package": "pnpm run desktop:build && electron-builder",
     "desktop:package:mac": "pnpm run desktop:build && electron-builder --mac",
     "desktop:package:win": "pnpm run desktop:build && electron-builder --win",
+    "assets:optimize": "node scripts/optimize-static-png-assets.mjs",
     "lint": "node scripts/enforce-pnpm.mjs && oxlint && pnpm run lint:ai-skills && pnpm run lint:module-docs && pnpm run lint:arithmetic && pnpm run lint:styles",
     "lint:ai-skills": "node scripts/enforce-pnpm.mjs && node scripts/validate-ai-skills.mjs",
     "lint:module-docs": "node scripts/enforce-pnpm.mjs && node scripts/validate-module-docs.mjs",
     "lint:arithmetic": "node scripts/enforce-pnpm.mjs && node scripts/check-no-private-arithmetic.mjs",
     "lint:styles": "node scripts/enforce-pnpm.mjs && stylelint \"src/**/*.scss\"",
-    "test": "node scripts/enforce-pnpm.mjs && tsx --test \"src/**/*.test.ts\"",
+    "test": "node scripts/enforce-pnpm.mjs && tsx --test \"src/**/*.test.ts\" && node --test scripts/optimize-static-png-assets.test.mjs",
     "preview": "node scripts/enforce-pnpm.mjs && vite preview"
   },
   "dependencies": {
@@ -50,6 +51,7 @@
     "oxlint": "^1.75.0",
     "postcss-scss": "^4.0.9",
     "sass": "^1.102.0",
+    "sharp": "^0.35.3",
     "stylelint": "^17.14.1",
     "stylelint-config-standard-scss": "^17.0.0",
     "tsx": "^4.23.12",

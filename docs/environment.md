@@ -31,6 +31,8 @@ cp .env.development.example .env.development
 | `pnpm run desktop:build` | production renderer + Electron host | `dist/production/`、`dist/electron/` |
 | `pnpm run desktop:package` | current host platform installer | `release/` |
 
+`pnpm run build`、`pnpm run build:staging` 和桌面构建只读取源码并生成产物，不会自动优化或改写资源。大型静态 PNG 的源码迁移只能由开发者按需执行 `pnpm run assets:optimize`；该命令会有意修改 Git 工作区，因此不属于 prebuild、CI 或部署流程。
+
 JS 入口、动态 chunk、CSS、图片、字体等经 Vite 构建图处理的静态资源统一输出到 `dist/<mode>/assets/`，文件名固定为 `[name]-[hash][extname]`。内容变化会改变 hash，因此部署端可以为 `assets/` 设置长期不可变缓存。
 
 部署配置必须同时满足：

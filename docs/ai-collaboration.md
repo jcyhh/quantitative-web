@@ -79,6 +79,7 @@ AI 开始任何代码任务前，按以下顺序阅读：
 | 多语言 | `src/shared/i18n` | `zh-CN` 与 `en-US` 的同名 key，禁止只补一种语言。 |
 | 环境配置 | `.env.example`、`.env.development.example`、`src/shared/config` | 类型声明、环境文档；开发者从模板创建被忽略的 `.env.development`；浏览器可见变量才用 `VITE_` 前缀。 |
 | Vite 构建 | `vite.config.ts`、`docs/environment.md` | 仅允许 development/staging/production；`VITE_DEPLOY_ENV` 必须与 mode 一致。不要擅自配置 base、target、sourcemap、manifest、手动分包或 PWA。 |
+| 静态位图源码迁移 | `scripts/optimize-static-png-assets.mjs` | 仅在开发者显式执行 `pnpm run assets:optimize` 时运行；只迁移安全可改写的 `src/**/assets` 大型静态 PNG。它会修改 Git 工作区，必须人工检查视觉和 diff 后提交；build、CI 与 Vite plugin 不得自动执行。 |
 | 入口 Meta | `index.html`、`.env.example`、`docs/environment.md` | 产品名、描述、robots 等公开值须三处同步；不得添加虚假的域名、分享图、PWA 或缓存配置。 |
 | LocalStorage | `src/shared/config/app.ts`、`src/shared/lib/storage` | `storageKeys`、`StorageSchema` 与 storage 封装；业务代码禁止直连 Web Storage API。 |
 | 主题 | `src/shared/config/theme.ts`、`src/shared/theme`、`src/app/styles/_colors.scss`、`src/app/styles/_tokens.scss` | 所有主题不变的原始色只放 `_colors.scss` 的 `--color-static-*`；主题语义色只放 `_tokens.scss`。注册主题名、补齐完整 token 与中英文名称；切换必须使用 `useThemeTransition`，组件中禁止硬编码颜色、以主题名分支或直接调用 View Transitions API。 |

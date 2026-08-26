@@ -38,6 +38,7 @@ src/
 - `pnpm run dev`：启动本地开发服务器
 - `pnpm run build`：类型检查并构建生产包到 `dist/production/`
 - `pnpm run build:staging`：构建预发布包到 `dist/staging/`
+- `pnpm run assets:optimize`：按需将已静态引用、体积足够大的 PNG 源码迁移为更小的 WebP；会修改 Git 工作区，运行后必须人工检查画质与 diff 并提交
 - `pnpm run desktop:dev`：以 Electron 窗口调试本地 React 应用
 - `pnpm run desktop:build`：构建生产 Web 渲染层和 Electron 主进程
 - `pnpm run desktop:package`：按当前系统平台生成桌面安装包到 `release/`
@@ -47,7 +48,7 @@ src/
 
 项目唯一包管理器为 pnpm `10.28.2`。禁止使用 npm、yarn、npx、bun 或其他锁文件执行项目命令；执行守卫会阻断错误包管理器及 `package-lock.json`、`yarn.lock` 等混入。新增依赖使用 `pnpm add <package>` 或 `pnpm add -D <package>`，并在同一提交更新 `package.json` 与 `pnpm-lock.yaml`。
 
-pnpm 默认不执行依赖的安装期脚本，只有已审查且记录在 `pnpm-workspace.yaml` 的包可执行。目前仅允许 Vite 所需的 `esbuild` 和文件监听所需的 `@parcel/watcher`。Electron-builder 带入的 `electron-winstaller` 是未获批准的 Squirrel Windows 辅助包；当前使用 NSIS 目标，不能因安装警告而批准它。新增白名单前必须说明包名、脚本用途与风险，并使用 `pnpm approve-builds <明确包名>`；禁止使用全量批准命令。
+pnpm 默认不执行依赖的安装期脚本，只有已审查且记录在 `pnpm-workspace.yaml` 的包可执行。目前仅允许 Vite 所需的 `esbuild` 和文件监听所需的 `@parcel/watcher`。`sharp` 是仅供 `assets:optimize` 使用的开发依赖，不进入浏览器或 Electron 产物；当前版本以可选平台二进制安装且未要求批准构建脚本，升级时仍须重新检查安装提示。Electron-builder 带入的 `electron-winstaller` 是未获批准的 Squirrel Windows 辅助包；当前使用 NSIS 目标，不能因安装警告而批准它。新增白名单前必须说明包名、脚本用途与风险，并使用 `pnpm approve-builds <明确包名>`；禁止使用全量批准命令。
 
 GitHub Actions 会在推送和 PR 中执行 lint、测试、生产/预发布 Web 构建和 Electron host 编译；工作流见 `.github/workflows/ci.yml`。带签名的桌面安装包由单独的发布任务在相应平台构建。
 

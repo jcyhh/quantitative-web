@@ -43,7 +43,9 @@ entities/strategy/
 
 ## 3. 当前测试边界
 
-当前 `pnpm run test` 使用 Node 的 TypeScript 测试运行器，只执行 `src/**/*.test.ts`，适合纯函数、解析、状态和公共基础能力测试。它不提供 DOM 渲染、浏览器交互或 E2E 环境。
+当前 `pnpm run test` 使用 Node 的 TypeScript 测试运行器执行 `src/**/*.test.ts`，并运行构建脚本的 Node 测试；它适合纯函数、解析、状态和公共基础能力测试，不提供 DOM 渲染、浏览器交互或 E2E 环境。
+
+资源源码迁移脚本的测试位于 `scripts/optimize-static-png-assets.test.mjs`，并由 `pnpm run test` 追加执行。测试使用临时目录和真实 `sharp` 编码，验证静态引用改写、APNG 跳过、体积比较和失败回滚；不得让测试迁移仓库内真实资源。
 
 出现首个需要测试真实 React 交互的需求时，先以独立任务确定并接入组件测试方案；出现首个跨页面关键流程时，再以独立任务确定 E2E 方案。接入时必须同步更新：测试命令、CI、本文档、AI 协作指南和所需的环境说明。当前禁止为了“以后可能会用”预装组件测试或 E2E 依赖。
 
