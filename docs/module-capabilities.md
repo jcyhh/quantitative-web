@@ -471,6 +471,18 @@ Utility 包含 Flex、Grid、1–12 列、尺寸、溢出、文本流、多行�
 
 业务组件使用 `*.module.scss`，不能硬编码颜色，只能消费 `var(--color-*)`。Utility 不提供颜色、阴影、主题和业务状态。
 
+### 为什么不使用 Tailwind CSS
+
+- 设计稿的常规尺寸需要直接使用 px，不需要再经过 Tailwind 的尺寸映射
+- 项目要求颜色全部来自语义化 `--color-*` token，避免颜色、阴影和业务状态通过任意 Utility 分散到 JSX
+- CSS Modules 与所属 FSD 模块就近维护，能够直接看出样式归属，功能删除时也更容易完整清理
+- 高频的 Flex、Grid、间距、字号和文本流已经由受控的 `tld-*` Utility 提供，无需同时维护两套 Utility 体系
+- 复杂组件视觉保留在 `*.module.scss`，比长串 className 更适合表达量化表格、面板和状态组合
+- Stylelint 已能检查原始颜色、class 命名和重复 Utility，让当前样式边界可以在 CI 中直接执行
+- 当前仅实现桌面端和一个紧凑桌面断点，引入完整的响应式 Utility 框架收益有限，还会增加依赖、配置和升级成本
+
+这不是否定 Tailwind CSS，而是当前项目优先选择“SCSS + CSS Modules + 语义 Token + 受控 Utility”的组合。若未来出现大量页面快速搭建、统一 Utility 设计系统或更多响应式场景，应单独评估迁移方案，不能让 Tailwind 与现有规则长期并行。
+
 当前只验收最低 1024px 的桌面端，1280px 是紧凑桌面断点；不做 px-to-rem、px-to-vw 或手机端结构。
 
 ## 17. 路由与应用骨架封装
