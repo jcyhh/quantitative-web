@@ -24,15 +24,15 @@ AI 开始任何代码任务前，按以下顺序阅读：
 
 每个会被其他模块、人工或 AI 复用的能力，都必须有可发现的说明。说明可放在模块 `README.md`、类型注释或专门文档中，但必须回答以下问题：
 
-| 必填信息 | 应说明的内容 |
-| --- | --- |
-| 职责 | 它解决什么问题，明确不解决什么问题。 |
-| 公共入口 | 外部应从哪个 `index.ts` 或配置文件导入。 |
-| 使用方式 | 最小调用示例、输入/输出或配置方式。 |
-| 约束 | 禁止直接使用的 API、依赖方向、数据安全或样式限制。 |
+| 必填信息 | 应说明的内容                                           |
+| -------- | ------------------------------------------------------ |
+| 职责     | 它解决什么问题，明确不解决什么问题。                   |
+| 公共入口 | 外部应从哪个 `index.ts` 或配置文件导入。               |
+| 使用方式 | 最小调用示例、输入/输出或配置方式。                    |
+| 约束     | 禁止直接使用的 API、依赖方向、数据安全或样式限制。     |
 | 扩展步骤 | 新增一项能力、配置项、存储键或语言文案时要同步改哪里。 |
-| 验证方式 | 至少写出需要执行的命令，必要时补充手工验收点。 |
-| 未决项 | 暂未确定的接口、业务规则或需要人工决策的边界。 |
+| 验证方式 | 至少写出需要执行的命令，必要时补充手工验收点。         |
+| 未决项   | 暂未确定的接口、业务规则或需要人工决策的边界。         |
 
 “显而易见”“以后再看”不能替代上述说明。文档应使用短句、确定的路径和可复制的命令，避免依赖聊天上下文、隐含简称或模糊指代。
 
@@ -55,39 +55,42 @@ AI 开始任何代码任务前，按以下顺序阅读：
 1. **定位**：确认需求属于哪一 FSD 层，找出现有公共能力，列出允许修改的文件范围。
 2. **决策**：信息不足时只提出会改变实现方向的最小问题；不能用假数据或假定量化规则掩盖不确定性。
 3. **实现**：遵守公共入口和依赖方向，不顺带重构无关区域。
-4. **记录**：按第 3 节检查应更新的文档；新建或改变有公共边界的模块必须同步更新同目录 README，内容至少包含职责、入口、约束、扩展位置与验证方式；范围和单文件例外见[模块说明](./architecture.md#模块说明)。
-5. **验证**：默认执行 `pnpm run build && pnpm run lint`。涉及 `electron/` 或桌面构建配置时，再执行 `pnpm run desktop:build`；若未执行或失败，必须如实说明原因与影响。
+4. **格式化**：执行 `pnpm run format`，让所有修改过的代码、配置和 Markdown 文档遵守 4 空格与仓库 Prettier 配置；不得格式化生成的 `pnpm-lock.yaml`。
+5. **记录**：按第 3 节检查应更新的文档；新建或改变有公共边界的模块必须同步更新同目录 README，内容至少包含职责、入口、约束、扩展位置与验证方式；范围和单文件例外见[模块说明](./architecture.md#模块说明)。
+6. **验证**：默认执行 `pnpm run build && pnpm run lint`。涉及 `electron/` 或桌面构建配置时，再执行 `pnpm run desktop:build`；若未执行或失败，必须如实说明原因与影响。
 
 涉及依赖时，唯一执行器是 pnpm。不得使用 npm、yarn、npx 或 bun；运行时依赖执行 `pnpm add`，开发依赖执行 `pnpm add -D`，并同步更新 `package.json` 和 `pnpm-lock.yaml`。依赖安装脚本默认拒绝：只可在审查脚本用途和风险后，用 `pnpm approve-builds <明确包名>` 增加 `pnpm-workspace.yaml` 的精确白名单，禁止全量批准。
-6. **交接**：最终输出必须包含：改了什么、关键路径、验证结果、假设/未决项。若任务触发兼容性契约，还必须说明已读契约、保留或变更的规则、自动验证和待人工复测环境；未触发则明确为“兼容性影响：无”。若发现新的可复用问题经验，说明它的路由位置和验证/执行约束。不要宣称已完成未执行的部署、提交、推送或接口联调。
+
+7. **交接**：最终输出必须包含：改了什么、关键路径、验证结果、假设/未决项。若任务触发兼容性契约，还必须说明已读契约、保留或变更的规则、自动验证和待人工复测环境；未触发则明确为“兼容性影响：无”。若发现新的可复用问题经验，说明它的路由位置和验证/执行约束。不要宣称已完成未执行的部署、提交、推送或接口联调。
 
 ## 5. 本项目已登记的基础设施
 
-| 能力 | 唯一入口 | 扩展时必须同步 |
-| --- | --- | --- |
-| 路由 | `src/app/config/routes.ts`、`src/app/router/router.tsx` | 路由配置、页面 slice、多语言文案；资源 ID 用语义化路径参数（如 `/strategies/:strategyId`），查询参数只放筛选/排序/分页等可选视图状态；生产部署需保持 History 回退。 |
-| HTTP 请求 | `src/shared/api` | 领域模块的 API 类型/校验；不得在业务模块直接调用 `fetch`。 |
-| 项目常量 | `src/shared/constants` | 项目短名、缩写和公共静态资源路径；显示文字在语言包，领域数据留在实体/API。 |
-| 数值展示 | `src/shared/lib/format` | 仅处理 `Intl` 展示；金额、价格、收益等计算留在领域模块，不能以 `number` 精度补丁替代计算方案。 |
-| 十进制运算 | `src/shared/lib/decimal` | 仅提供加减乘除；字符串输入/输出优先，固定 40 位有效数字和 `ROUND_HALF_UP`，除零抛错。禁止业务模块直引 `decimal.js`。 |
-| 普通数值运算 | `src/shared/lib/number` | 仅 UI 几何、动画等非金融计算；禁止用于金额、价格、数量、收益及任何业务数据。 |
-| 时间 | `src/shared/lib/time`、`sharedConfig.time.defaultTimeZone` | 当前仅提供 `formatDateTime`。日期展示必须传当前 locale；默认时区为 `Asia/Shanghai`，可在 `options.timeZone` 覆盖；确定时刻的 API 字符串必须包含时区。日期比较、倒计时和交易日等能力需有明确需求后再新增。 |
-| 剪贴板 | `src/shared/lib/clipboard` | 仅使用 `await copyText`；内部固定 `copy-to-clipboard`，返回 `Promise<boolean>`，调用方负责多语言反馈。 |
-| 通知 | `src/shared/notification` | 仅使用 `notification.success/info/warning/error/confirm`；当前是原生对话框临时回退，后续定制 UI 只替换模块内部。 |
-| 文件下载 | `src/shared/lib/download` | 调用方负责内容、MIME、文件名和权限，工具只触发浏览器下载。 |
-| 兼容性契约 | `docs/compatibility.md` 与其登记的领域文档 | 任务触发时先读索引与领域契约；首次确认的长期兼容性边界必须同时沉淀实现理由、自动化验证和必要的人工复测环境。 |
-| 多语言 | `src/shared/i18n` | `zh-CN` 与 `en-US` 的同名 key，禁止只补一种语言。 |
-| 环境配置 | `.env.example`、`.env.development.example`、`src/shared/config` | 类型声明、环境文档；开发者从模板创建被忽略的 `.env.development`；浏览器可见变量才用 `VITE_` 前缀。 |
-| Vite 构建 | `vite.config.ts`、`docs/environment.md` | 仅允许 development/staging/production；`VITE_DEPLOY_ENV` 必须与 mode 一致。不要擅自配置 base、target、sourcemap、manifest、手动分包或 PWA。 |
-| 静态位图源码迁移 | `scripts/optimize-static-png-assets.mjs` | 仅在开发者显式执行 `pnpm run assets:optimize` 时运行；只迁移安全可改写的 `src/**/assets` 大型静态 PNG。它会修改 Git 工作区，必须人工检查视觉和 diff 后提交；build、CI 与 Vite plugin 不得自动执行。 |
-| 入口 Meta | `index.html`、`.env.example`、`docs/environment.md` | 产品名、描述、robots 等公开值须三处同步；不得添加虚假的域名、分享图、PWA 或缓存配置。 |
-| LocalStorage | `src/shared/config/app.ts`、`src/shared/lib/storage` | `storageKeys`、`StorageSchema` 与 storage 封装；业务代码禁止直连 Web Storage API。 |
-| 主题 | `src/shared/config/theme.ts`、`src/shared/theme`、`src/app/styles/_colors.scss`、`src/app/styles/_tokens.scss` | 所有主题不变的原始色只放 `_colors.scss` 的 `--color-static-*`；主题语义色只放 `_tokens.scss`。注册主题名、补齐完整 token 与中英文名称；切换必须使用 `useThemeTransition`，组件中禁止硬编码颜色、以主题名分支或直接调用 View Transitions API。 |
-| PWA 预留 | `src/shared/lib/pwa`、`docs/pwa.md` | 当前只提供安装生命周期 Hook；不得注册 Service Worker、添加 manifest、缓存策略或入口，直到单独立项确认。 |
-| Electron 桌面壳 | `electron/`、`electron-builder.yml` | React 仍在 `src` 按 FSD 组织；桌面能力只经 preload 的具名方法和已校验 sender 的 IPC 暴露。保持 `contextIsolation` 与 sandbox，禁止 renderer Node integration、通用 IPC 通道和未验证的外部导航。扩展步骤见 `electron/README.md`；安装包仅由 `desktop:package*` 生成到被忽略的 `release/`。 |
-| 团队 AI workflow | `.agents/skills/`、`docs/ai-skills.md` | Skill 源码随仓库版本化，负责任务编排；不可复制为各工具私有规范。执行 Agent 可写任务范围，Review Agent 只读；同一工作区内重叠文件只能有一个写入 Agent。 |
-| 模块说明 | 受管模块根目录的 `README.md`，或 `shared/lib/format.md` | 说明职责、入口、约束、扩展位置与验证方式；新增或改变公共边界时同步更新，`lint:module-docs` 会校验。 |
-| 样式与响应式 | `src/app/styles`、各模块 `*.module.scss` | 当前只验收最低 1024px 的桌面布局；使用 token、流式容器和模块样式为后续移动端留扩展点，禁止新增全局业务样式或猜测手机视觉。 |
+| 能力             | 唯一入口                                                                                                       | 扩展时必须同步                                                                                                                                                                                                                                                                            |
+| ---------------- | -------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 代码格式化       | `.editorconfig`、`.prettierrc.json`、`pnpm run format`                                                         | 所有可解析的手写代码、配置与 Markdown 使用 4 个空格且禁止 Tab；`format:check` 已接入 lint/CI，`pnpm-lock.yaml` 只由 pnpm 生成。                                                                                                                                                           |
+| 路由             | `src/app/config/routes.ts`、`src/app/router/router.tsx`                                                        | 路由配置、页面 slice、多语言文案；资源 ID 用语义化路径参数（如 `/strategies/:strategyId`），查询参数只放筛选/排序/分页等可选视图状态；生产部署需保持 History 回退。                                                                                                                       |
+| HTTP 请求        | `src/shared/api`                                                                                               | 领域模块的 API 类型/校验；不得在业务模块直接调用 `fetch`。                                                                                                                                                                                                                                |
+| 项目常量         | `src/shared/constants`                                                                                         | 项目短名、缩写和公共静态资源路径；显示文字在语言包，领域数据留在实体/API。                                                                                                                                                                                                                |
+| 数值展示         | `src/shared/lib/format`                                                                                        | 仅处理 `Intl` 展示；金额、价格、收益等计算留在领域模块，不能以 `number` 精度补丁替代计算方案。                                                                                                                                                                                            |
+| 十进制运算       | `src/shared/lib/decimal`                                                                                       | 仅提供加减乘除；字符串输入/输出优先，固定 40 位有效数字和 `ROUND_HALF_UP`，除零抛错。禁止业务模块直引 `decimal.js`。                                                                                                                                                                      |
+| 普通数值运算     | `src/shared/lib/number`                                                                                        | 仅 UI 几何、动画等非金融计算；禁止用于金额、价格、数量、收益及任何业务数据。                                                                                                                                                                                                              |
+| 时间             | `src/shared/lib/time`、`sharedConfig.time.defaultTimeZone`                                                     | 当前仅提供 `formatDateTime`。日期展示必须传当前 locale；默认时区为 `Asia/Shanghai`，可在 `options.timeZone` 覆盖；确定时刻的 API 字符串必须包含时区。日期比较、倒计时和交易日等能力需有明确需求后再新增。                                                                                 |
+| 剪贴板           | `src/shared/lib/clipboard`                                                                                     | 仅使用 `await copyText`；内部固定 `copy-to-clipboard`，返回 `Promise<boolean>`，调用方负责多语言反馈。                                                                                                                                                                                    |
+| 通知             | `src/shared/notification`                                                                                      | 仅使用 `notification.success/info/warning/error/confirm`；当前是原生对话框临时回退，后续定制 UI 只替换模块内部。                                                                                                                                                                          |
+| 文件下载         | `src/shared/lib/download`                                                                                      | 调用方负责内容、MIME、文件名和权限，工具只触发浏览器下载。                                                                                                                                                                                                                                |
+| 兼容性契约       | `docs/compatibility.md` 与其登记的领域文档                                                                     | 任务触发时先读索引与领域契约；首次确认的长期兼容性边界必须同时沉淀实现理由、自动化验证和必要的人工复测环境。                                                                                                                                                                              |
+| 多语言           | `src/shared/i18n`                                                                                              | `zh-CN` 与 `en-US` 的同名 key，禁止只补一种语言。                                                                                                                                                                                                                                         |
+| 环境配置         | `.env.example`、`.env.development.example`、`src/shared/config`                                                | 类型声明、环境文档；开发者从模板创建被忽略的 `.env.development`；浏览器可见变量才用 `VITE_` 前缀。                                                                                                                                                                                        |
+| Vite 构建        | `vite.config.ts`、`docs/environment.md`                                                                        | 仅允许 development/staging/production；`VITE_DEPLOY_ENV` 必须与 mode 一致。不要擅自配置 base、target、sourcemap、manifest、手动分包或 PWA。                                                                                                                                               |
+| 静态位图源码迁移 | `scripts/optimize-static-png-assets.mjs`                                                                       | 仅在开发者显式执行 `pnpm run assets:optimize` 时运行；只迁移安全可改写的 `src/**/assets` 大型静态 PNG。它会修改 Git 工作区，必须人工检查视觉和 diff 后提交；build、CI 与 Vite plugin 不得自动执行。                                                                                       |
+| 入口 Meta        | `index.html`、`.env.example`、`docs/environment.md`                                                            | 产品名、描述、robots 等公开值须三处同步；不得添加虚假的域名、分享图、PWA 或缓存配置。                                                                                                                                                                                                     |
+| LocalStorage     | `src/shared/config/app.ts`、`src/shared/lib/storage`                                                           | `storageKeys`、`StorageSchema` 与 storage 封装；业务代码禁止直连 Web Storage API。                                                                                                                                                                                                        |
+| 主题             | `src/shared/config/theme.ts`、`src/shared/theme`、`src/app/styles/_colors.scss`、`src/app/styles/_tokens.scss` | 所有主题不变的原始色只放 `_colors.scss` 的 `--color-static-*`；主题语义色只放 `_tokens.scss`。注册主题名、补齐完整 token 与中英文名称；切换必须使用 `useThemeTransition`，组件中禁止硬编码颜色、以主题名分支或直接调用 View Transitions API。                                             |
+| PWA 预留         | `src/shared/lib/pwa`、`docs/pwa.md`                                                                            | 当前只提供安装生命周期 Hook；不得注册 Service Worker、添加 manifest、缓存策略或入口，直到单独立项确认。                                                                                                                                                                                   |
+| Electron 桌面壳  | `electron/`、`electron-builder.yml`                                                                            | React 仍在 `src` 按 FSD 组织；桌面能力只经 preload 的具名方法和已校验 sender 的 IPC 暴露。保持 `contextIsolation` 与 sandbox，禁止 renderer Node integration、通用 IPC 通道和未验证的外部导航。扩展步骤见 `electron/README.md`；安装包仅由 `desktop:package*` 生成到被忽略的 `release/`。 |
+| 团队 AI workflow | `.agents/skills/`、`docs/ai-skills.md`                                                                         | Skill 源码随仓库版本化，负责任务编排；不可复制为各工具私有规范。执行 Agent 可写任务范围，Review Agent 只读；同一工作区内重叠文件只能有一个写入 Agent。                                                                                                                                    |
+| 模块说明         | 受管模块根目录的 `README.md`，或 `shared/lib/format.md`                                                        | 说明职责、入口、约束、扩展位置与验证方式；新增或改变公共边界时同步更新，`lint:module-docs` 会校验。                                                                                                                                                                                       |
+| 样式与响应式     | `src/app/styles`、各模块 `*.module.scss`                                                                       | 当前只验收最低 1024px 的桌面布局；使用 token、流式容器和模块样式为后续移动端留扩展点，禁止新增全局业务样式或猜测手机视觉。                                                                                                                                                                |
 
 ## 6. AI 友好的写法
 

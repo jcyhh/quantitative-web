@@ -4,13 +4,13 @@
 
 项目只允许 `development`、`staging`、`production` 三种 Vite mode。`development` 只能运行开发服务器，不能构建部署包；`staging` 与 `production` 才是可构建环境。`vite.config.ts` 会在启动或构建时校验 `VITE_DEPLOY_ENV` 必须与 mode 完全一致；未知 mode、不一致或开发环境构建都会立即失败，避免将错误接口、语言默认值或构建目录发布到错误环境。
 
-| 文件 | 用途 | 使用命令 |
-| --- | --- | --- |
-| `.env` | 所有环境共享的公开默认值 | 自动加载 |
-| `.env.development.example` | 本地开发模板，提交到仓库 | 首次拉取后复制 |
-| `.env.development` | 每位开发者本地开发配置，不提交 | `pnpm run dev` |
-| `.env.staging` | 预发布验证 | `pnpm run build:staging` |
-| `.env.production` | 生产构建 | `pnpm run build` 或 `pnpm run build:production` |
+| 文件                       | 用途                           | 使用命令                                        |
+| -------------------------- | ------------------------------ | ----------------------------------------------- |
+| `.env`                     | 所有环境共享的公开默认值       | 自动加载                                        |
+| `.env.development.example` | 本地开发模板，提交到仓库       | 首次拉取后复制                                  |
+| `.env.development`         | 每位开发者本地开发配置，不提交 | `pnpm run dev`                                  |
+| `.env.staging`             | 预发布验证                     | `pnpm run build:staging`                        |
+| `.env.production`          | 生产构建                       | `pnpm run build` 或 `pnpm run build:production` |
 
 首次克隆或拉取项目后，若本地尚无 `.env.development`，执行：
 
@@ -24,12 +24,12 @@ cp .env.development.example .env.development
 
 每个 Vite mode 只写入自己的输出目录，构建当前环境时只清空该环境目录，不会删除其他环境已生成的产物：
 
-| 命令 | mode | 输出目录 |
-| --- | --- | --- |
-| `pnpm run build:staging` | `staging` | `dist/staging/` |
-| `pnpm run build` / `pnpm run build:production` | `production` | `dist/production/` |
-| `pnpm run desktop:build` | production renderer + Electron host | `dist/production/`、`dist/electron/` |
-| `pnpm run desktop:package` | current host platform installer | `release/` |
+| 命令                                           | mode                                | 输出目录                             |
+| ---------------------------------------------- | ----------------------------------- | ------------------------------------ |
+| `pnpm run build:staging`                       | `staging`                           | `dist/staging/`                      |
+| `pnpm run build` / `pnpm run build:production` | `production`                        | `dist/production/`                   |
+| `pnpm run desktop:build`                       | production renderer + Electron host | `dist/production/`、`dist/electron/` |
+| `pnpm run desktop:package`                     | current host platform installer     | `release/`                           |
 
 `pnpm run build`、`pnpm run build:staging` 和桌面构建只读取源码并生成产物，不会自动优化或改写资源。大型静态 PNG 的源码迁移只能由开发者按需执行 `pnpm run assets:optimize`；该命令会有意修改 Git 工作区，因此不属于 prebuild、CI 或部署流程。
 
@@ -64,16 +64,16 @@ Electron 复用 `dist/production/` 中的 React SPA，并将 `electron/` 编译�
 
 ## 已支持的变量
 
-| 变量 | 作用 | 是否进入浏览器 |
-| --- | --- | --- |
-| `VITE_APP_NAME` | 产品名称 | 是 |
-| `VITE_APP_DESCRIPTION` | 入口页 description | 是 |
-| `VITE_ROBOTS` | 入口页 robots 策略；内部系统默认 `noindex,nofollow,noarchive` | 是 |
-| `VITE_API_BASE_URL` | API 前缀或公开 API 地址 | 是 |
-| `VITE_API_TIMEOUT` | 请求超时（毫秒，正整数） | 是 |
-| `VITE_DEPLOY_ENV` | 当前 mode 的部署标识：development / staging / production；必须等于 Vite mode | 是 |
-| `VITE_DEFAULT_LANGUAGE` | 首次访问时的默认语言：zh-CN / en-US；按 mode 配置 | 是 |
-| `API_PROXY_TARGET` | 本地 Vite 代理目标 | 否 |
+| 变量                    | 作用                                                                         | 是否进入浏览器 |
+| ----------------------- | ---------------------------------------------------------------------------- | -------------- |
+| `VITE_APP_NAME`         | 产品名称                                                                     | 是             |
+| `VITE_APP_DESCRIPTION`  | 入口页 description                                                           | 是             |
+| `VITE_ROBOTS`           | 入口页 robots 策略；内部系统默认 `noindex,nofollow,noarchive`                | 是             |
+| `VITE_API_BASE_URL`     | API 前缀或公开 API 地址                                                      | 是             |
+| `VITE_API_TIMEOUT`      | 请求超时（毫秒，正整数）                                                     | 是             |
+| `VITE_DEPLOY_ENV`       | 当前 mode 的部署标识：development / staging / production；必须等于 Vite mode | 是             |
+| `VITE_DEFAULT_LANGUAGE` | 首次访问时的默认语言：zh-CN / en-US；按 mode 配置                            | 是             |
+| `API_PROXY_TARGET`      | 本地 Vite 代理目标                                                           | 否             |
 
 生产和预发布默认使用同域 `/api` 网关。若部署形态不同，可将 `VITE_API_BASE_URL` 设置为公开 API 地址；不要将密钥、账户、令牌或内网机密放入任何 `VITE_` 变量。
 

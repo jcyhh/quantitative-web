@@ -4,5 +4,9 @@ import { router } from './router/router'
 import { ThemeProvider } from '../shared/theme'
 
 export function App(): ReactElement {
-  return <ThemeProvider><RouterProvider router={router} /></ThemeProvider>
+    return (
+        <ThemeProvider>
+            <RouterProvider router={router} />
+        </ThemeProvider>
+    )
 }

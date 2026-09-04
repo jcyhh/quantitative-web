@@ -1,54 +1,54 @@
 name: CI
 
 on:
-  push:
-    branches: ['**']
-  pull_request:
-  merge_group:
-  workflow_dispatch:
+    push:
+        branches: ['**']
+    pull_request:
+    merge_group:
+    workflow_dispatch:
 
 permissions:
-  contents: read
+    contents: read
 
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+    group: ci-${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
 
 jobs:
-  verify:
-    name: Test, lint and build
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
+    verify:
+        name: Test, lint and build
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
 
-    steps:
-      - name: Check out source
-        uses: actions/checkout@v4
+        steps:
+            - name: Check out source
+              uses: actions/checkout@v4
 
-      - name: Set up pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10.28.2
+            - name: Set up pnpm
+              uses: pnpm/action-setup@v4
+              with:
+                  version: 10.28.2
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
+            - name: Set up Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: pnpm
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
 
-      - name: Lint
-        run: pnpm run lint
+            - name: Lint
+              run: pnpm run lint
 
-      - name: Test
-        run: pnpm run test
+            - name: Test
+              run: pnpm run test
 
-      - name: Build production bundle
-        run: pnpm run build
+            - name: Build production bundle
+              run: pnpm run build
 
-      - name: Build staging bundle
-        run: pnpm run build:staging
+            - name: Build staging bundle
+              run: pnpm run build:staging
 
-      - name: Build Electron host
-        run: pnpm run desktop:build:main
+            - name: Build Electron host
+              run: pnpm run desktop:build:main

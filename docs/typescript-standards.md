@@ -13,12 +13,15 @@
 
 `pnpm run lint` 还会以 error 阻断：
 
+- 未遵守 Prettier 4 空格、空格缩进的格式；
 - `any`；
 - 非空断言 `value!`；
 - 所有具名函数和类方法缺少显式返回类型；
 - 未使用 `import type` 的纯类型导入。
 
 不得通过关闭规则、添加 lint disable、扩大 `tsconfig` exclude 范围或用 `as any` 绕过。类型规则需要调整时，必须先更新本文件、[开发规范](./development-standards.md)和相关测试，再单独说明理由。
+
+TypeScript 和 TSX 由仓库根目录 `.prettierrc.json` 统一格式化，缩进固定为 4 个空格并禁止 Tab。先运行 `pnpm run format` 写入格式，再运行 `pnpm run format:check` 或 `pnpm run lint` 检查；不要通过手工对齐或局部格式化注释建立另一套风格。
 
 ## 2. 类型放置与命名
 
@@ -35,17 +38,17 @@
 
 ```ts
 export interface StrategySummary {
-  readonly strategyId: string
-  readonly name: string
-  readonly status: StrategyStatus
+    readonly strategyId: string
+    readonly name: string
+    readonly status: StrategyStatus
 }
 
 export function toStrategySummary(payload: unknown): StrategySummary {
-  // 先校验 payload，再返回领域模型
+    // 先校验 payload，再返回领域模型
 }
 
 export async function loadStrategies(query: StrategyQuery): Promise<StrategySummary[]> {
-  // 明确异步结果，而不是依赖推断
+    // 明确异步结果，而不是依赖推断
 }
 ```
 
@@ -61,13 +64,13 @@ export async function loadStrategies(query: StrategyQuery): Promise<StrategySumm
 
 ```ts
 export interface StrategyDto {
-  id: string
-  name: string
-  status: 'running' | 'paused'
+    id: string
+    name: string
+    status: 'running' | 'paused'
 }
 
 export function isStrategyDto(value: unknown): value is StrategyDto {
-  // 校验 object、每个必需字段及 status 的允许值
+    // 校验 object、每个必需字段及 status 的允许值
 }
 ```
 

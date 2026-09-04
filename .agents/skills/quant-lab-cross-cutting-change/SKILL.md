@@ -20,19 +20,19 @@ Use this skill when a change affects more than its immediate implementation modu
 
 Apply only the rows relevant to the requested change:
 
-| Change | Also inspect or update |
-| --- | --- |
-| Route | route configuration, router, page slice, navigation, both locale files and route documentation |
-| Shared capability | named capability directory, root `index.ts`, focused test and `docs/ai-collaboration.md` infrastructure table |
-| Language key | `zh-CN`, `en-US`, locale-key test and the owning module copy |
-| Storage key | `sharedConfig.storageKeys`, `StorageSchema`, storage behavior and documentation |
-| Theme/token | theme registration, token completeness, both locale labels and existing-page verification |
-| Environment/build | environment templates, type/config validation, environment documentation, CI and deployment assumptions |
-| Dependency | reuse decision, `package.json`, `pnpm-lock.yaml`, build-script allowlist review, purpose/risk documentation and CI |
-| Electron bridge | `electron/preload.cts`, validated main-process IPC handler, renderer abstraction only when consumed, `electron/README.md` and desktop build |
-| Compatibility contract | `docs/compatibility.md`, affected capability boundary, observable fallback/cleanup test and any required manual device/runtime verification |
+| Change                     | Also inspect or update                                                                                                                      |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| Route                      | route configuration, router, page slice, navigation, both locale files and route documentation                                              |
+| Shared capability          | named capability directory, root `index.ts`, focused test and `docs/ai-collaboration.md` infrastructure table                               |
+| Language key               | `zh-CN`, `en-US`, locale-key test and the owning module copy                                                                                |
+| Storage key                | `sharedConfig.storageKeys`, `StorageSchema`, storage behavior and documentation                                                             |
+| Theme/token                | theme registration, token completeness, both locale labels and existing-page verification                                                   |
+| Environment/build          | environment templates, type/config validation, environment documentation, CI and deployment assumptions                                     |
+| Dependency                 | reuse decision, `package.json`, `pnpm-lock.yaml`, build-script allowlist review, purpose/risk documentation and CI                          |
+| Electron bridge            | `electron/preload.cts`, validated main-process IPC handler, renderer abstraction only when consumed, `electron/README.md` and desktop build |
+| Compatibility contract     | `docs/compatibility.md`, affected capability boundary, observable fallback/cleanup test and any required manual device/runtime verification |
 | Reusable problem knowledge | the correct lint/test, module documentation, compatibility contract, ADR or `docs/todo.md`; do not retain unproven claims as a project rule |
-| Public module boundary | owning module README with responsibility, entry, constraints, extension points and verification |
+| Public module boundary     | owning module README with responsibility, entry, constraints, extension points and verification                                             |
 
 ## Safety boundaries
 

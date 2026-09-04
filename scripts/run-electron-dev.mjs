@@ -7,47 +7,47 @@ let electronProcess
 let rendererUrl
 
 const viteProcess = spawn(pnpmCommand, ['run', 'dev', '--', '--host', '127.0.0.1'], {
-  env: process.env,
-  stdio: ['ignore', 'pipe', 'pipe'],
+    env: process.env,
+    stdio: ['ignore', 'pipe', 'pipe'],
 })
 
 function startElectron(url) {
-  if (electronProcess !== undefined) return
+    if (electronProcess !== undefined) return
 
-  electronProcess = spawn(process.execPath, [electronCli], {
-    env: { ...process.env, DESKTOP_RENDERER_URL: url },
-    stdio: 'inherit',
-  })
+    electronProcess = spawn(process.execPath, [electronCli], {
+        env: { ...process.env, DESKTOP_RENDERER_URL: url },
+        stdio: 'inherit',
+    })
 
-  electronProcess.on('exit', (code) => {
-    viteProcess.kill()
-    process.exitCode = code ?? 0
-  })
+    electronProcess.on('exit', (code) => {
+        viteProcess.kill()
+        process.exitCode = code ?? 0
+    })
 }
 
 function forwardViteOutput(chunk, target) {
-  const output = chunk.toString()
-  target.write(output)
+    const output = chunk.toString()
+    target.write(output)
 
-  if (rendererUrl !== undefined) return
+    if (rendererUrl !== undefined) return
 
-  const match = output.match(/http:\/\/127\.0\.0\.1:\d+\//)
+    const match = output.match(/http:\/\/127\.0\.0\.1:\d+\//)
 
-  if (match === null) return
+    if (match === null) return
 
-  rendererUrl = match[0]
-  startElectron(rendererUrl)
+    rendererUrl = match[0]
+    startElectron(rendererUrl)
 }
 
 viteProcess.stdout.on('data', (chunk) => forwardViteOutput(chunk, process.stdout))
 viteProcess.stderr.on('data', (chunk) => forwardViteOutput(chunk, process.stderr))
 viteProcess.on('exit', (code) => {
-  if (electronProcess === undefined) process.exitCode = code ?? 1
+    if (electronProcess === undefined) process.exitCode = code ?? 1
 })
 
 function stopProcesses() {
-  viteProcess.kill()
-  electronProcess?.kill()
+    viteProcess.kill()
+    electronProcess?.kill()
 }
 
 process.on('SIGINT', stopProcesses)

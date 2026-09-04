@@ -1,0 +1,18 @@
+{
+    "tabWidth": 4,
+    "useTabs": false,
+    "semi": false,
+    "singleQuote": true,
+    "trailingComma": "all",
+    "printWidth": 120,
+    "proseWrap": "preserve",
+    "endOfLine": "lf",
+    "overrides": [
+        {
+            "files": ".agents/skills/*/agents/openai.yaml",
+            "options": {
+                "singleQuote": false
+            }
+        }
+    ]
+}

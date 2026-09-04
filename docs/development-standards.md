@@ -13,6 +13,7 @@
 5. **代码与文档同步。** 架构边界、环境变量、接口契约或开发流程改变时，同步更新对应文档。
 6. **AI 可接手。** 新增或改变公共能力时，按 [AI 协作指南](./ai-collaboration.md) 写明职责、入口、扩展步骤、验证方式与未决项，禁止让关键信息只存在于聊天记录中。
 7. **依赖一致。** 包管理器唯一使用 pnpm `10.28.2`。所有项目命令只能使用 `pnpm` 或 `pnpm run`；禁止 npm、yarn、npx、bun。执行守卫会阻断错误执行器和非 pnpm 锁文件，不能绕过或关闭。
+8. **格式一致。** 所有 Prettier 可解析的代码、配置和 Markdown 文档统一使用 4 个空格缩进，禁止 Tab；修改后执行 `pnpm run format`，不得维护局部例外或手工对齐风格。
 
 ## 2. 目录与依赖规则
 
@@ -24,14 +25,14 @@ app → pages → widgets → features → entities → shared
 
 低层目录禁止依赖高层目录；除 `app` 和 `shared` 外，同层不同业务模块之间也禁止直接互相引用。跨模块复用应下沉到更低层，或将共享能力抽取为新模块。
 
-| 目录 | 职责 | 可以包含 |
-| --- | --- | --- |
-| `src/app` | 应用装配 | 路由、Provider、全局样式 |
-| `src/pages` | 路由入口 | 页面布局与模块组合 |
-| `src/widgets` | 跨页面展示区块 | 顶栏、侧栏、行情面板、策略列表 |
-| `src/features` | 用户可感知的业务动作 | 创建策略、回测、调仓、导出 |
-| `src/entities` | 稳定业务对象 | 策略、标的、组合的类型、API、展示 |
-| `src/shared` | 项目基础设施 | HTTP、环境配置、格式化、基础 UI、常量 |
+| 目录           | 职责                 | 可以包含                              |
+| -------------- | -------------------- | ------------------------------------- |
+| `src/app`      | 应用装配             | 路由、Provider、全局样式              |
+| `src/pages`    | 路由入口             | 页面布局与模块组合                    |
+| `src/widgets`  | 跨页面展示区块       | 顶栏、侧栏、行情面板、策略列表        |
+| `src/features` | 用户可感知的业务动作 | 创建策略、回测、调仓、导出            |
+| `src/entities` | 稳定业务对象         | 策略、标的、组合的类型、API、展示     |
+| `src/shared`   | 项目基础设施         | HTTP、环境配置、格式化、基础 UI、常量 |
 
 新增模块使用小写短横线命名，例如 `features/run-backtest/`、`entities/portfolio/`。模块对外只通过 `index.ts` 导出；内部文件可以自由调整，不应被外部直接引用。
 
@@ -54,6 +55,8 @@ app → pages → widgets → features → entities → shared
 示例：`创建策略` 的表单和提交逻辑放在 `features/create-strategy`；`StrategySummary` 与策略 API 放在 `entities/strategy`；策略页负责把它们组合起来。
 
 ## 4. TypeScript 与 React
+
+格式化的唯一配置是仓库根目录 `.editorconfig` 与 `.prettierrc.json`。`pnpm run format` 会格式化仓库内所有可解析的手写文本文件；`pnpm run format:check` 只检查不写入，并已接入 `pnpm run lint` 与 CI。依赖、构建产物、二进制资源和生成的 `pnpm-lock.yaml` 不属于格式化目标；lockfile 只能由 pnpm 更新。
 
 - 必须遵守独立的 [TypeScript 规范](./typescript-standards.md)。项目已启用 strict 编译模式；`any`、非空断言、缺少显式返回类型的具名函数/类方法均为 lint error，不能压制或绕过。
 - 外部未知数据使用 `unknown` 后再校验；每个业务接口的 DTO、领域模型、请求参数与错误契约必须在所属 slice 明确类型，不能只用 `apiClient` 泛型断言代替运行时校验。
@@ -209,6 +212,7 @@ AI 完成时必须：
 - [ ] 无跨层反向依赖、无内部路径的跨模块导入。
 - [ ] 加载、空、错误状态已覆盖或有明确的暂缓说明。
 - [ ] TypeScript 构建与 lint 通过：`pnpm run build && pnpm run lint`。
+- [ ] `pnpm run format:check` 通过，新增或修改文件使用 4 个空格且没有 Tab 缩进。
 - [ ] 文档、类型、环境变量或 API 契约已同步更新。
 - [ ] 变更说明足以让另一位成员或 AI 无需口头补充即可接手。
 

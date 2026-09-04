@@ -2,6 +2,8 @@
 
 量化项目的前端基础工程，基于 React 19、TypeScript 与 Vite。
 
+需要用于项目介绍、技术评审或会议讲解时，可直接阅读[模板模块与封装能力说明](docs/module-capabilities.md)。该文档按成熟度列出当前应用模块、公共封装、样式系统、构建发布、Electron、安全边界、测试和明确未完成项。
+
 ## 开始开发
 
 ```bash
@@ -43,6 +45,8 @@ src/
 - `pnpm run desktop:build`：构建生产 Web 渲染层和 Electron 主进程
 - `pnpm run desktop:package`：按当前系统平台生成桌面安装包到 `release/`
 - `pnpm run desktop:package:mac` / `pnpm run desktop:package:win`：请求 macOS DMG 或 Windows NSIS 产物；正式跨平台发布应在对应平台 CI 构建
+- `pnpm run format`：使用 Prettier 按 4 空格规范格式化全部可解析的源码、配置与 Markdown 文档
+- `pnpm run format:check`：只检查格式，不修改文件；已包含在 `pnpm run lint` 中
 - `pnpm run lint`：执行 TypeScript/React 与 SCSS 规范检查
 - `pnpm run test`：执行基础能力单元测试
 
@@ -50,7 +54,9 @@ src/
 
 pnpm 默认不执行依赖的安装期脚本，只有已审查且记录在 `pnpm-workspace.yaml` 的包可执行。目前仅允许 Vite 所需的 `esbuild` 和文件监听所需的 `@parcel/watcher`。`sharp` 是仅供 `assets:optimize` 使用的开发依赖，不进入浏览器或 Electron 产物；当前版本以可选平台二进制安装且未要求批准构建脚本，升级时仍须重新检查安装提示。Electron-builder 带入的 `electron-winstaller` 是未获批准的 Squirrel Windows 辅助包；当前使用 NSIS 目标，不能因安装警告而批准它。新增白名单前必须说明包名、脚本用途与风险，并使用 `pnpm approve-builds <明确包名>`；禁止使用全量批准命令。
 
-GitHub Actions 会在推送和 PR 中执行 lint、测试、生产/预发布 Web 构建和 Electron host 编译；工作流见 `.github/workflows/ci.yml`。带签名的桌面安装包由单独的发布任务在相应平台构建。
+Prettier 是仅用于本地和 CI 格式检查的开发依赖，不进入运行时产物。当前版本无运行时依赖和安装脚本，因此不需要加入依赖构建白名单；`.editorconfig` 与 `.prettierrc.json` 共同固定 4 空格、空格缩进和现有无分号/单引号风格。
+
+GitHub Actions 会在推送和 PR 中执行格式检查、lint、测试、生产/预发布 Web 构建和 Electron host 编译；工作流见 `.github/workflows/ci.yml`。带签名的桌面安装包由单独的发布任务在相应平台构建。
 
 ## 基础能力
 

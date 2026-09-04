@@ -20,6 +20,8 @@
 
 包管理器唯一使用 pnpm `10.28.2`。所有项目命令必须使用 `pnpm` 或 `pnpm run`；禁止 npm、yarn、npx、bun。`scripts/enforce-pnpm.mjs` 会阻断错误执行器以及 `package-lock.json`、`yarn.lock` 等非 pnpm 锁文件。新增运行时依赖使用 `pnpm add`，构建/测试依赖使用 `pnpm add -D`，并在同一提交更新 `package.json`、`pnpm-lock.yaml`、文档与 CI；禁止手改 lockfile 或忽略其他锁文件。依赖安装脚本默认不执行；只有 `pnpm-workspace.yaml` 的 `onlyBuiltDependencies` 中已审查的精确包名才能运行。新增白名单必须记录用途和风险，并只用 `pnpm approve-builds <包名>` 审批，禁止全量批准。
 
+所有 Prettier 可解析的代码、配置和 Markdown 文档统一使用 4 个空格缩进，禁止 Tab。`.editorconfig` 与 `.prettierrc.json` 是格式化源；修改文件后执行 `pnpm run format`，`pnpm run lint` 会通过 `pnpm run format:check` 阻断未格式化内容。生成的 `pnpm-lock.yaml` 不做手工格式化。
+
 TypeScript 使用 strict 模式：禁止 `any`、非空断言和无校验的外部数据断言；所有具名函数与类方法必须标注返回类型。对象契约使用 `interface`，联合/映射/泛型组合使用 `type`；请求 DTO、领域模型与 UI Props 必须分层定义。完整规则见 [TypeScript 规范](./docs/typescript-standards.md)。
 
 测试按模块与可验证行为就近组织，不按页面数量创建。公式、解析、状态转换、公共能力和缺陷修复必须补同目录单元测试；纯页面组合或静态布局通常不测。当前仅支持 `.test.ts` 基础测试，组件交互与 E2E 出现真实需求后再独立立项，详见 [测试规范](./docs/testing-standards.md)。

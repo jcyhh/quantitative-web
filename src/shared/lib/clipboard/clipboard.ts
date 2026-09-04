@@ -5,7 +5,7 @@ import copy from 'copy-to-clipboard'
  * Callers own user feedback and localization.
  */
 export async function copyText(text: string): Promise<boolean> {
-  if (text.length === 0) return false
+    if (text.length === 0) return false
 
-  return copy(text)
+    return copy(text)
 }

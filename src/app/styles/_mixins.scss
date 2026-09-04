@@ -1,13 +1,13 @@
 $breakpoint-desktop-compact: 1280px;
 
 @mixin down($breakpoint) {
-  @media (max-width: $breakpoint) {
-    @content;
-  }
+    @media (max-width: $breakpoint) {
+        @content;
+    }
 }
 
 @mixin up($breakpoint) {
-  @media (min-width: $breakpoint) {
-    @content;
-  }
+    @media (min-width: $breakpoint) {
+        @content;
+    }
 }

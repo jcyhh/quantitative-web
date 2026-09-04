@@ -1,7 +1,7 @@
 export type NotificationLevel = 'success' | 'info' | 'warning' | 'error'
 
 function showNativeAlert(message: string): void {
-  window.alert(message)
+    window.alert(message)
 }
 
 /**
@@ -9,19 +9,19 @@ function showNativeAlert(message: string): void {
  * custom notification UI and provider are implemented.
  */
 export const notification = {
-  success(message: string): void {
-    showNativeAlert(message)
-  },
-  info(message: string): void {
-    showNativeAlert(message)
-  },
-  warning(message: string): void {
-    showNativeAlert(message)
-  },
-  error(message: string): void {
-    showNativeAlert(message)
-  },
-  confirm(message: string): boolean {
-    return window.confirm(message)
-  },
+    success(message: string): void {
+        showNativeAlert(message)
+    },
+    info(message: string): void {
+        showNativeAlert(message)
+    },
+    warning(message: string): void {
+        showNativeAlert(message)
+    },
+    error(message: string): void {
+        showNativeAlert(message)
+    },
+    confirm(message: string): boolean {
+        return window.confirm(message)
+    },
 } as const

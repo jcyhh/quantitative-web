@@ -44,13 +44,13 @@ features/run-backtest/
 
 资源的位置按以下顺序判断：
 
-| 使用范围 | 正确位置 | 说明 |
-| --- | --- | --- |
-| 仅一个 page/widget/feature/entity 使用 | 该模块的 `assets/` | 页面只是组合时，资源应归真正拥有视觉或业务含义的子模块。 |
-| 同一实体的多个模块使用 | `entities/<entity>/assets/` | 例如策略领域专属的状态图或标识。 |
-| 跨业务模块且不含业务语义 | `shared/assets/<category>/` | 例如公共图标、通用插图；按 `icons`、`illustrations` 等概念分类。 |
-| 固定 URL 的入口/部署资源 | `public/` | 例如 favicon、robots 或已确认的固定公开资源路径。 |
-| 全局字体 | `app/styles` 所登记的字体资源位置 | 字体登记仍只由 `_fonts.scss` 管理。 |
+| 使用范围                               | 正确位置                          | 说明                                                             |
+| -------------------------------------- | --------------------------------- | ---------------------------------------------------------------- |
+| 仅一个 page/widget/feature/entity 使用 | 该模块的 `assets/`                | 页面只是组合时，资源应归真正拥有视觉或业务含义的子模块。         |
+| 同一实体的多个模块使用                 | `entities/<entity>/assets/`       | 例如策略领域专属的状态图或标识。                                 |
+| 跨业务模块且不含业务语义               | `shared/assets/<category>/`       | 例如公共图标、通用插图；按 `icons`、`illustrations` 等概念分类。 |
+| 固定 URL 的入口/部署资源               | `public/`                         | 例如 favicon、robots 或已确认的固定公开资源路径。                |
+| 全局字体                               | `app/styles` 所登记的字体资源位置 | 字体登记仍只由 `_fonts.scss` 管理。                              |
 
 同一资源出现**第二个真实消费者**时，执行提升，而不是复制：
 
@@ -77,16 +77,16 @@ Vite 会将 `src` 中被 TS/TSX/SCSS **静态引用**的资源加入构建图；
 
 `shared/lib` 不等于 `utils` 收纳目录。每个目录都必须对应一个清晰的跨业务技术能力，并只通过自己的 `index.ts` 导出：
 
-| 能力 | 入口 | 职责 |
-| --- | --- | --- |
-| 数值展示 | `shared/lib/format` | 金额、收益率等 `Intl` 展示格式化；不做业务计算。 |
-| 十进制运算 | `shared/lib/decimal` | 加、减、乘、除的十进制基础能力；不承载业务公式。 |
-| 普通数值运算 | `shared/lib/number` | UI 几何、动画等非金融 `number` 计算；不可用于业务数据。 |
-| 时间 | `shared/lib/time` | 当前仅提供带默认时区的日期/时间展示；默认时区来自 `sharedConfig.time.defaultTimeZone`。 |
-| 存储 | `shared/lib/storage` | 受类型约束的 Web Storage 唯一入口。 |
-| 剪贴板 | `shared/lib/clipboard` | 基于 `copy-to-clipboard` 的文本复制；不包含 UI 提示。 |
-| 通知 | `shared/notification` | 全局用户反馈入口；当前使用原生对话框，后续承接定制通知 Provider/UI。 |
-| 下载 | `shared/lib/download` | Blob 或既有 URL 的浏览器下载。 |
+| 能力         | 入口                   | 职责                                                                                    |
+| ------------ | ---------------------- | --------------------------------------------------------------------------------------- |
+| 数值展示     | `shared/lib/format`    | 金额、收益率等 `Intl` 展示格式化；不做业务计算。                                        |
+| 十进制运算   | `shared/lib/decimal`   | 加、减、乘、除的十进制基础能力；不承载业务公式。                                        |
+| 普通数值运算 | `shared/lib/number`    | UI 几何、动画等非金融 `number` 计算；不可用于业务数据。                                 |
+| 时间         | `shared/lib/time`      | 当前仅提供带默认时区的日期/时间展示；默认时区来自 `sharedConfig.time.defaultTimeZone`。 |
+| 存储         | `shared/lib/storage`   | 受类型约束的 Web Storage 唯一入口。                                                     |
+| 剪贴板       | `shared/lib/clipboard` | 基于 `copy-to-clipboard` 的文本复制；不包含 UI 提示。                                   |
+| 通知         | `shared/notification`  | 全局用户反馈入口；当前使用原生对话框，后续承接定制通知 Provider/UI。                    |
+| 下载         | `shared/lib/download`  | Blob 或既有 URL 的浏览器下载。                                                          |
 
 新增基础函数前先检查已有能力是否覆盖。若属于既有能力，添加到该能力目录；若是第二个可独立演进的概念，创建新能力目录和 `index.ts`，并补充本文档、AI 协作指南与验证记录。领域计算（收益、仓位、指标等）留在 `entities` 或 `features`，不得放进 `shared/lib`；它们可以调用 `shared/lib/decimal`，但必须自行定义单位、精度、舍入与边界。`shared/lib/number` 仅服务 UI 几何和动画等非金融场景，不能作为规避十进制精度约束的入口。
 
@@ -94,14 +94,14 @@ Vite 会将 `src` 中被 TS/TSX/SCSS **静态引用**的资源加入构建图；
 
 项目禁止建立平铺的 `src/hooks/` 目录。Hook 必须归属于它服务的领域或技术能力，和对应的类型、工具、组件放在同一个模块内：
 
-| Hook 类型 | 正确位置 | 示例 |
-| --- | --- | --- |
-| 应用装配/Provider 生命周期 | `src/app/<segment>/` | 应用级 Provider 内部 Hook |
-| 某个用户动作的状态与交互 | `src/features/<feature>/model/` | `features/run-backtest/model/useRunBacktest.ts` |
-| 某个稳定业务对象的查询/计算 | `src/entities/<entity>/model/` | `entities/strategy/model/useStrategySummary.ts` |
-| 页面或 Widget 私有交互 | 所属 slice 的 `model/` 或 `ui/` | `widgets/market-panel/model/useMarketFilters.ts` |
-| 跨业务的浏览器/基础设施能力 | `src/shared/lib/<capability>/` | `shared/lib/pwa/usePwaInstall.ts` |
-| 全局技术域能力 | `src/shared/<segment>/` | `shared/theme/model/useAppTheme.ts`、`shared/i18n/useAppLanguage.ts` |
+| Hook 类型                   | 正确位置                        | 示例                                                                 |
+| --------------------------- | ------------------------------- | -------------------------------------------------------------------- |
+| 应用装配/Provider 生命周期  | `src/app/<segment>/`            | 应用级 Provider 内部 Hook                                            |
+| 某个用户动作的状态与交互    | `src/features/<feature>/model/` | `features/run-backtest/model/useRunBacktest.ts`                      |
+| 某个稳定业务对象的查询/计算 | `src/entities/<entity>/model/`  | `entities/strategy/model/useStrategySummary.ts`                      |
+| 页面或 Widget 私有交互      | 所属 slice 的 `model/` 或 `ui/` | `widgets/market-panel/model/useMarketFilters.ts`                     |
+| 跨业务的浏览器/基础设施能力 | `src/shared/lib/<capability>/`  | `shared/lib/pwa/usePwaInstall.ts`                                    |
+| 全局技术域能力              | `src/shared/<segment>/`         | `shared/theme/model/useAppTheme.ts`、`shared/i18n/useAppLanguage.ts` |
 
 一个能力目录可包含多个紧密相关的 Hook，但必须以能力命名（如 `pwa`、`storage`、`browser`），不能命名为泛化的 `hooks`。每个 Hook 单独文件，通过该能力目录的 `index.ts` 导出。没有第二个明确消费者前，不要把业务 Hook 提升到 `shared`。
 

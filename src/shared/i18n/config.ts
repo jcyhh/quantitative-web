@@ -8,10 +8,10 @@ export const defaultLanguage: SupportedLanguage = sharedConfig.locale.defaultLan
 export const languageStorageKey = sharedConfig.storageKeys.language
 
 export function isSupportedLanguage(value: string | null): value is SupportedLanguage {
-  return value !== null && supportedLanguages.includes(value as SupportedLanguage)
+    return value !== null && supportedLanguages.includes(value as SupportedLanguage)
 }
 
 export function getInitialLanguage(): SupportedLanguage {
-  const savedLanguage = storage.get(languageStorageKey)
-  return isSupportedLanguage(savedLanguage) ? savedLanguage : defaultLanguage
+    const savedLanguage = storage.get(languageStorageKey)
+    return isSupportedLanguage(savedLanguage) ? savedLanguage : defaultLanguage
 }

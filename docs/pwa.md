@@ -12,12 +12,12 @@
 const { canInstall, isInstalled, supportsInstall, install } = usePwaInstall()
 ```
 
-| 返回值 | 含义 |
-| --- | --- |
-| `canInstall` | 浏览器已派发安装提示，且应用尚未安装。 |
-| `isInstalled` | 当前独立窗口运行，或浏览器已触发 `appinstalled`。 |
-| `supportsInstall` | 当前环境具备 PWA 安装条件；不代表已经拿到安装提示。 |
-| `install()` | 调起浏览器安装提示，返回 `accepted`、`dismissed` 或 `unavailable`。 |
+| 返回值            | 含义                                                                |
+| ----------------- | ------------------------------------------------------------------- |
+| `canInstall`      | 浏览器已派发安装提示，且应用尚未安装。                              |
+| `isInstalled`     | 当前独立窗口运行，或浏览器已触发 `appinstalled`。                   |
+| `supportsInstall` | 当前环境具备 PWA 安装条件；不代表已经拿到安装提示。                 |
+| `install()`       | 调起浏览器安装提示，返回 `accepted`、`dismissed` 或 `unavailable`。 |
 
 Hook 监听 `beforeinstallprompt`、`appinstalled` 和 `(display-mode: standalone)`；安装状态只通过统一的 `shared/lib/storage` 持久化，禁止业务代码直接读取 Web Storage。
 

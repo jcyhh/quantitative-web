@@ -5,10 +5,10 @@ import { enUS } from './locales/en-US'
 import { zhCN } from './locales/zh-CN'
 
 void i18n.use(initReactI18next).init({
-  resources: { 'zh-CN': { translation: zhCN }, 'en-US': { translation: enUS } },
-  lng: getInitialLanguage(),
-  fallbackLng: defaultLanguage,
-  interpolation: { escapeValue: false },
+    resources: { 'zh-CN': { translation: zhCN }, 'en-US': { translation: enUS } },
+    lng: getInitialLanguage(),
+    fallbackLng: defaultLanguage,
+    interpolation: { escapeValue: false },
 })
 
 export { i18n }
