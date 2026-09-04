@@ -1,10 +1,35 @@
-# Quant Lab 公共封装说明
+# Quant Lab 模板技术选型与公共封装说明
+
+## 项目技术选型
+
+核心技术：
+
+- React 19：负责页面与组件渲染，使用函数组件和 Hook 组织交互逻辑
+- TypeScript 6：开启 strict 模式，为请求、领域模型、组件属性和公共能力提供静态类型约束
+- Vite 8：负责开发服务器、环境模式校验、资源处理和 Web 构建
+- React Router 7：负责语义化路由、页面懒加载和路由错误边界
+- i18next 26 + react-i18next 17：统一管理中英文文案和语言切换
+- Sass + CSS Modules：使用 SCSS 编写样式，通过模块作用域避免业务样式互相污染
+- Electron 43 + electron-builder 26：复用同一套 React 渲染层构建桌面端，并负责安装包生成
+- Feature-Sliced Design：按 `app → pages → widgets → features → entities → shared` 组织模块与依赖方向
+- pnpm 10.28.2 + Node.js 22–24：固定包管理器和运行时范围，保证本地与 CI 安装结果一致
+- Oxlint + Stylelint + Prettier：分别约束 TypeScript、SCSS 和代码格式，统一使用 4 空格缩进
+- Node.js Test Runner + tsx：执行公共能力和脚本的轻量单元测试，不额外引入测试运行时框架
+
+选型考虑：
+
+- 优先保证量化业务的类型安全、金额计算精度和模块边界，而不是只追求快速搭页面
+- Web 与 Electron 共用业务代码，桌面能力统一通过 preload 和受控 IPC 暴露
+- 构建、格式、lint 和测试都提供固定命令，便于本地开发和 CI 使用同一套标准
+- 当前不预装全局状态库、UI 组件库、图表库和请求缓存库，等真实业务场景明确后再选型，避免模板提前绑定技术方案
 
 这个模板重点封装的是“公共基础能力”，让后续业务页面不要直接碰浏览器 API、浮点计算、主题 DOM 或底层请求。
 
 ## 1. HTTP 请求封装
 
 入口：`src/shared/api`
+
+三方库：无，基于浏览器原生 Fetch API、`URL`、`Headers` 和 `AbortController`
 
 提供：
 
@@ -40,6 +65,8 @@ const result = await apiClient.get<unknown>('/strategies', {
 
 入口：`src/shared/lib/decimal`
 
+三方库：`decimal.js`（依赖范围 `^10.6.0`，当前锁定版本 `10.6.0`）
+
 提供：
 
 - `decimalAdd`
@@ -60,6 +87,8 @@ decimalMultiply('12.35', '20')
 // '247'
 ```
 
+底层使用 `decimal.js` 完成任意精度十进制运算，并通过项目封装统一固定精度、舍入方式、输入输出和除零行为。业务模块不能直接导入该三方库。
+
 这个模块只解决 JavaScript 二进制浮点误差，不定义收益率、回撤、手续费、仓位等业务公式。领域公式仍放在对应 `entities` 或 `features` 中。
 
 金融 API 数据和计算输入优先使用字符串，避免进入计算前就损失精度。
@@ -67,6 +96,8 @@ decimalMultiply('12.35', '20')
 ## 3. 普通数值计算
 
 入口：`src/shared/lib/number`
+
+三方库：无，基于 JavaScript 原生 `number`
 
 提供：
 
@@ -87,6 +118,8 @@ const centerX = numberAdd(rect.left, numberDivide(rect.width, 2))
 ## 4. 数值展示格式化
 
 入口：`src/shared/lib/format.ts`
+
+三方库：无，基于浏览器原生 `Intl.NumberFormat`
 
 提供：
 
@@ -109,6 +142,8 @@ formatCurrency(1_284_560, 'CNY', 'zh-CN')
 ## 5. 日期时间封装
 
 入口：`src/shared/lib/time`
+
+三方库：无，基于浏览器原生 `Date` 和 `Intl.DateTimeFormat`
 
 提供：
 
@@ -136,6 +171,8 @@ formatDateTime(value, locale, {
 ## 6. LocalStorage 封装
 
 入口：`src/shared/lib/storage`
+
+三方库：无，基于浏览器原生 Web Storage API
 
 提供：
 
@@ -165,6 +202,8 @@ storage.remove(sharedConfig.storageKeys.theme)
 
 入口：`src/shared/lib/clipboard`
 
+三方库：`copy-to-clipboard`（依赖范围 `^4.0.2`，当前锁定版本 `4.0.2`）
+
 提供：
 
 - `copyText`
@@ -188,6 +227,8 @@ if (copied) {
 
 入口：`src/shared/lib/download`
 
+三方库：无，基于浏览器原生 `Blob`、`URL` 和 DOM API
+
 提供：
 
 - `downloadFile`
@@ -207,6 +248,8 @@ downloadText(JSON.stringify(strategy), 'strategy.json', 'application/json;charse
 ## 9. 用户通知封装
 
 入口：`src/shared/notification`
+
+三方库：无，当前临时使用浏览器原生 `alert` 和 `confirm`
 
 提供：
 
@@ -233,6 +276,8 @@ const confirmed = notification.confirm(t('strategy.confirmDelete'))
 - `src/shared/config/theme.ts`
 - `src/shared/theme`
 - `src/app/styles/_tokens.scss`
+
+三方库：`react`（`^19.2.8`）和 `react-dom`（`^19.2.8`）；动画使用浏览器原生 View Transitions API
 
 提供：
 
@@ -265,6 +310,8 @@ changeTheme(theme === 'dark' ? 'light' : 'dark')
 
 入口：`src/shared/i18n`
 
+三方库：`i18next`（`^26.3.6`）和 `react-i18next`（`^17.0.11`）
+
 提供：
 
 - i18next 与 react-i18next 初始化
@@ -292,6 +339,8 @@ changeLanguage('en-US')
 
 入口：`src/shared/lib/pwa`
 
+三方库：仅使用 `react`（`^19.2.8`）管理 Hook 状态；安装能力基于浏览器原生 PWA 事件，未引入 PWA 插件或 Workbox
+
 提供：
 
 - `initializePwaInstallLifecycle`
@@ -316,6 +365,8 @@ const { canInstall, isInstalled, supportsInstall, install } = usePwaInstall()
 ## 13. 公共配置封装
 
 入口：`src/shared/config`
+
+三方库：无直接运行时依赖；环境变量由 Vite 的 `import.meta.env` 注入
 
 提供：
 
@@ -348,6 +399,8 @@ sharedConfig.storageKeys.theme
 
 入口：`src/shared/constants`
 
+三方库：无
+
 提供：
 
 - 项目短名 `Quant Lab`
@@ -367,6 +420,8 @@ projectConstants.assets.iconSpritePath
 ## 15. 公共 UI 封装
 
 入口：`src/shared/ui`
+
+三方库：`react`（`^19.2.8`）和 `react-i18next`（`^17.0.11`）；主题与数值格式化复用项目内部公共能力
 
 当前提供：
 
@@ -394,6 +449,8 @@ projectConstants.assets.iconSpritePath
 ## 16. 全局样式封装
 
 入口：`src/app/styles/index.scss`
+
+三方库：`sass`（`^1.102.0`）；CSS Modules 由 Vite 处理，样式规则由 Stylelint 检查
 
 提供：
 
@@ -425,6 +482,8 @@ Utility 包含 Flex、Grid、1–12 列、尺寸、溢出、文本流、多行�
 - `src/app/router/router.tsx`
 - `src/widgets/app-layout`
 
+三方库：`react`（`^19.2.8`）、`react-dom`（`^19.2.8`）和 `react-router-dom`（`^7.18.2`）
+
 提供：
 
 - 集中的路由路径常量
@@ -447,6 +506,8 @@ Utility 包含 Flex、Grid、1–12 列、尺寸、溢出、文本流、多行�
 - `electron/main.ts`
 - `electron/preload.cts`
 - `electron-builder.yml`
+
+三方库：`electron`（`^43.4.1`）和 `electron-builder`（`^26.15.3`）
 
 提供：
 
@@ -483,6 +544,13 @@ window.quantLabDesktop.getAppVersion(): Promise<string>
 - `stylelint.config.mjs`
 - `scripts/`
 - `.github/workflows/ci.yml`
+
+主要三方工具：
+
+- 构建与类型：`vite`（`^8.2.0`）、`@vitejs/plugin-react`（`^6.0.4`）、`typescript`（`~6.0.2`）
+- 格式与检查：`prettier`（`^3.9.6`）、`oxlint`（`^1.75.0`）、`stylelint`（`^17.14.1`）、`stylelint-config-standard-scss`（`^17.0.0`）、`postcss-scss`（`^4.0.9`）
+- 测试执行：`tsx`（`^4.23.12`）和 Node.js 内置 Test Runner
+- 图片处理：`sharp`（`^0.35.3`），只由显式资源优化脚本使用
 
 提供：
 
