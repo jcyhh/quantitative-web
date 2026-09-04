@@ -25,7 +25,40 @@
 
 这个模板重点封装的是“公共基础能力”，让后续业务页面不要直接碰浏览器 API、浮点计算、主题 DOM 或底层请求。
 
-## 1. HTTP 请求封装
+## 1. 公共配置封装
+
+入口：`src/shared/config`
+
+三方库：无直接运行时依赖；环境变量由 Vite 的 `import.meta.env` 注入
+
+提供：
+
+- 应用名称
+- Vite mode
+- 部署环境
+- API 基础地址
+- API 默认超时
+- 默认语言和支持语言
+- 默认展示时区
+- 默认页码和分页大小
+- 最大分页大小
+- Storage 键名
+- 支持主题和默认主题
+- API 超时正整数校验与 fallback
+- 默认语言白名单校验与 fallback
+
+```ts
+sharedConfig.application.name
+sharedConfig.api.baseUrl
+sharedConfig.api.timeout
+sharedConfig.time.defaultTimeZone
+sharedConfig.pagination.defaultPageSize
+sharedConfig.storageKeys.theme
+```
+
+这里放环境值、默认值、开关和存储键。用户文案放 i18n，稳定项目标识放 constants，策略状态和金融标的留在业务模块。
+
+## 2. HTTP 请求封装
 
 入口：`src/shared/api`
 
@@ -61,7 +94,7 @@ const result = await apiClient.get<unknown>('/strategies', {
 
 当前没有包含 Token 刷新、业务错误码映射、自动重试、缓存、请求去重和 WebSocket。
 
-## 2. 精确金融计算
+## 3. 精确金融计算
 
 入口：`src/shared/lib/decimal`
 
@@ -93,7 +126,7 @@ decimalMultiply('12.35', '20')
 
 金融 API 数据和计算输入优先使用字符串，避免进入计算前就损失精度。
 
-## 3. 普通数值计算
+## 4. 普通数值计算
 
 入口：`src/shared/lib/number`
 
@@ -115,7 +148,7 @@ const centerX = numberAdd(rect.left, numberDivide(rect.width, 2))
 
 项目还会检查私有 TS/TSX 中的原始四则运算，要求调用方明确选择 `decimal` 或 `number`，而不是在业务代码里随意计算。
 
-## 4. 数值展示格式化
+## 5. 数值展示格式化
 
 入口：`src/shared/lib/format.ts`
 
@@ -139,7 +172,7 @@ formatCurrency(1_284_560, 'CNY', 'zh-CN')
 
 格式化模块只负责最终展示，不参与金融计算。调用方需要传入当前语言环境。
 
-## 5. 日期时间封装
+## 6. 日期时间封装
 
 入口：`src/shared/lib/time`
 
@@ -168,7 +201,7 @@ formatDateTime(value, locale, {
 
 当前只封装时间展示，没有日期比较、倒计时、交易日历和交易时段。交易日历属于市场领域，不应直接放进 `shared/lib`。
 
-## 6. LocalStorage 封装
+## 7. LocalStorage 封装
 
 入口：`src/shared/lib/storage`
 
@@ -198,7 +231,7 @@ storage.remove(sharedConfig.storageKeys.theme)
 
 新增键时要同时更新 `sharedConfig.storageKeys`、`StorageSchema`、测试和模块说明。
 
-## 7. 剪贴板封装
+## 8. 剪贴板封装
 
 入口：`src/shared/lib/clipboard`
 
@@ -223,7 +256,7 @@ if (copied) {
 
 这个模块只负责复制，成功或失败提示由调用方根据真实结果和当前语言处理。
 
-## 8. 文件下载封装
+## 9. 文件下载封装
 
 入口：`src/shared/lib/download`
 
@@ -245,7 +278,7 @@ downloadText(JSON.stringify(strategy), 'strategy.json', 'application/json;charse
 
 下载模块只负责浏览器触发。文件内容、文件名、MIME 类型、导出权限和敏感数据处理由调用方负责。
 
-## 9. 用户通知封装
+## 10. 用户通知封装
 
 入口：`src/shared/notification`
 
@@ -269,7 +302,7 @@ const confirmed = notification.confirm(t('strategy.confirmDelete'))
 
 当前内部仍使用浏览器原生对话框。以后可以在 `shared/notification` 内替换为 Toast、通知队列或自定义确认框，不需要修改业务侧调用入口。
 
-## 10. 主题系统封装
+## 11. 主题系统封装
 
 入口：
 
@@ -306,7 +339,7 @@ changeTheme(theme === 'dark' ? 'light' : 'dark')
 
 新增主题时要同步主题注册、完整 token、中英文主题名和已有页面验证。
 
-## 11. 多语言封装
+## 12. 多语言封装
 
 入口：`src/shared/i18n`
 
@@ -335,7 +368,7 @@ changeLanguage('en-US')
 
 所有用户可见文本都应进入语言包。新增文案必须同时补充中文和英文，新增语言必须完整补齐所有 key。
 
-## 12. PWA 安装生命周期
+## 13. PWA 安装生命周期
 
 入口：`src/shared/lib/pwa`
 
@@ -361,39 +394,6 @@ const { canInstall, isInstalled, supportsInstall, install } = usePwaInstall()
 ```
 
 当前项目没有真正启用 PWA，不包含 manifest、Service Worker、离线缓存、安装按钮和更新策略。这一层只是安装生命周期预留。
-
-## 13. 公共配置封装
-
-入口：`src/shared/config`
-
-三方库：无直接运行时依赖；环境变量由 Vite 的 `import.meta.env` 注入
-
-提供：
-
-- 应用名称
-- Vite mode
-- 部署环境
-- API 基础地址
-- API 默认超时
-- 默认语言和支持语言
-- 默认展示时区
-- 默认页码和分页大小
-- 最大分页大小
-- Storage 键名
-- 支持主题和默认主题
-- API 超时正整数校验与 fallback
-- 默认语言白名单校验与 fallback
-
-```ts
-sharedConfig.application.name
-sharedConfig.api.baseUrl
-sharedConfig.api.timeout
-sharedConfig.time.defaultTimeZone
-sharedConfig.pagination.defaultPageSize
-sharedConfig.storageKeys.theme
-```
-
-这里放环境值、默认值、开关和存储键。用户文案放 i18n，稳定项目标识放 constants，策略状态和金融标的留在业务模块。
 
 ## 14. 项目常量封装
 
