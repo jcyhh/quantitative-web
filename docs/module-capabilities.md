@@ -1,5 +1,40 @@
 # Quant Lab 模板技术选型与公共封装说明
 
+## 项目目录总览
+
+```text
+quantitative-web/
+├── src/                 # React 应用源码，按 FSD 分层
+│   ├── app/             # 应用启动、路由、Provider、全局样式和装配
+│   ├── pages/           # 路由级页面，只负责组合下层模块
+│   ├── widgets/         # 可跨页面复用的完整界面区块
+│   ├── features/        # 用户可感知的业务动作，例如创建策略、运行回测
+│   ├── entities/        # 稳定业务对象，例如策略、组合、持仓和金融标的
+│   └── shared/          # 无业务归属的公共配置、工具、基础 UI 和基础设施
+├── electron/            # Electron 主进程、preload 和桌面端桥接
+├── public/              # 需要固定 URL 的公开静态资源，会原样进入构建产物
+├── scripts/             # 仓库检查、开发启动和资源处理脚本
+├── docs/                # 架构、开发、环境、测试和模块能力文档
+├── .agents/             # 随仓库维护的 Codex 团队 Skill
+└── .github/             # GitHub Actions 持续集成配置
+```
+
+`src` 内遵守 `app → pages → widgets → features → entities → shared` 的单向依赖：上层可以组合下层，下层不能反向引用上层；业务 slice 只通过自身根目录的 `index.ts` 暴露公共入口。
+
+`electron` 是 React 应用的桌面宿主，不属于 `src` 内的 FSD 层。桌面能力只能通过受限 preload 和具名 IPC 暴露，React 页面不能直接导入 Electron 或 Node.js API。
+
+`public` 只存放确实需要固定 URL 的发布资源。业务图片、图标和视频应跟随所属 FSD 模块放入局部 `assets/`，不能把 `public` 或全局 `src/assets` 当作资源收纳目录。
+
+`node_modules/`、`.pnpm-store/`、`dist/` 和 `release/` 分别是依赖、缓存、Web/Electron 编译结果和桌面安装包目录，均由安装或构建命令生成，不属于手写源码，也不应提交到 Git。
+
+### Hook 是什么、放在哪里
+
+Hook 是以 `use` 开头的函数，用来封装可复用的 React 状态、生命周期、事件处理和业务操作。它不直接渲染页面，而是把状态和操作返回给组件使用。
+
+项目不建立统一的 `src/hooks` 收纳目录。Hook 跟随它服务的模块：运行回测等业务操作放在 `features/<feature>/model`，页面或 Widget 私有 Hook 留在所属模块，跨业务的主题、语言和浏览器能力才放在命名明确的 `shared` 能力中。
+
+判断归属时先确认 Hook 服务哪个模块。只有出现第二个真实的跨业务消费者，才考虑把它下沉到 `shared`。
+
 ## 项目技术选型
 
 核心技术：
