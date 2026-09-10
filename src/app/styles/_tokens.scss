@@ -44,10 +44,11 @@
     --radius-md: 10px;
     --shadow-panel: 0 12px 30px rgb(0 0 0 / 8%);
     --content-max-width: 1340px;
-    --page-gutter: clamp(24px, 2.8vw, 40px);
+    --page-gutter: clamp(16px, 2.8vw, 40px);
     --page-block-padding: 36px;
     --header-height: 76px;
     --sidebar-width: 232px;
+    --mobile-nav-height: 64px;
 }
 
 :root[data-theme='light'] {

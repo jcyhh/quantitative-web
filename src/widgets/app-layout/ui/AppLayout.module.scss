@@ -175,3 +175,71 @@
         font-size: 0;
     }
 }
+
+@include mixin.down(mixin.$breakpoint-mobile) {
+    .appShell {
+        display: block;
+        padding-bottom: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom, 0px));
+    }
+
+    .sidebar {
+        position: fixed;
+        z-index: 10;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        display: block;
+        height: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom, 0px));
+        padding: 6px 10px env(safe-area-inset-bottom, 0);
+        border-top: 1px solid var(--color-border-subtle);
+        border-right: 0;
+    }
+
+    .brand,
+    .sidebarFooter {
+        display: none;
+    }
+
+    .mainNav {
+        display: flex;
+        align-items: stretch;
+        justify-content: space-around;
+        height: 100%;
+        gap: 4px;
+        margin-top: 0;
+    }
+
+    .navItem {
+        flex: 1 1 0;
+        flex-direction: column;
+        justify-content: center;
+        gap: 2px;
+        padding: 5px 3px;
+        font-size: 10px;
+        text-align: center;
+    }
+
+    .navIcon {
+        width: auto;
+        font-size: 17px;
+    }
+
+    .mainContent {
+        width: 100%;
+    }
+
+    .topbar {
+        min-height: var(--header-height);
+        height: auto;
+        flex-wrap: wrap;
+        gap: 10px;
+        padding-top: 12px;
+        padding-bottom: 12px;
+    }
+
+    .topbarActions {
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+}

@@ -43,11 +43,70 @@ entities/strategy/
 
 ## 3. 当前测试边界
 
-当前 `pnpm run test` 使用 Node 的 TypeScript 测试运行器执行 `src/**/*.test.ts`，并运行构建脚本的 Node 测试；它适合纯函数、解析、状态和公共基础能力测试，不提供 DOM 渲染、浏览器交互或 E2E 环境。
+项目采用两层测试环境，文件扩展名同时决定运行器和运行环境：
+
+| 文件类型    | 运行器                           | 适用范围                                      |
+| ----------- | -------------------------------- | --------------------------------------------- |
+| `.test.ts`  | Node Test Runner + `tsx`         | 纯函数、公式、DTO、解析、状态、配置和公共能力 |
+| `.test.tsx` | Vitest + jsdom + Testing Library | React 组件、Hook、Context、Effect 和用户交互  |
+| `.test.mjs` | Node Test Runner                 | 仓库脚本与 Node.js 基础设施                   |
+
+`pnpm run test` 会先通过 `tsconfig.test.json` 对全部测试做严格类型检查，再依次执行 Node 和组件测试。Node 测试不会自动获得 DOM；组件测试使用 jsdom，但不能替代真实浏览器的布局、Canvas 像素、下载、权限和 Electron 验收。
 
 资源源码迁移脚本的测试位于 `scripts/optimize-static-png-assets.test.mjs`，并由 `pnpm run test` 追加执行。测试使用临时目录和真实 `sharp` 编码，验证静态引用改写、APNG 跳过、体积比较和失败回滚；不得让测试迁移仓库内真实资源。
 
-出现首个需要测试真实 React 交互的需求时，先以独立任务确定并接入组件测试方案；出现首个跨页面关键流程时，再以独立任务确定 E2E 方案。接入时必须同步更新：测试命令、CI、本文档、AI 协作指南和所需的环境说明。当前禁止为了“以后可能会用”预装组件测试或 E2E 依赖。
+Vitest 使用独立的 `vitest.config.ts`，不合并应用 `vite.config.ts`，因为应用配置只接受 development、staging、production 三种 mode。`vitest.setup.ts` 只注册 jest-dom matcher 和 React cleanup；`ResizeObserver`、`matchMedia`、Storage、时间与网络等依赖由所属测试就近控制并恢复。
+
+当前没有 E2E、真实浏览器组件测试和网络 Mock Server。首个稳定跨页面关键流程出现后，再独立评估 Playwright；首个必须跨真实 HTTP 边界的组件测试出现后，再评估 MSW。不要为了可能出现的需求提前增加依赖。
+
+### 3.1 常用命令
+
+```bash
+pnpm run test:typecheck
+pnpm run test:unit
+pnpm run test:unit:watch
+pnpm run test:component
+pnpm run test:component:watch
+pnpm run test
+pnpm run test:coverage
+```
+
+- 日常提交前运行 `pnpm run test`，它包含测试类型检查和两类测试。
+- 开发纯函数时使用 `pnpm run test:unit:watch`；开发组件时使用 `pnpm run test:component:watch`。
+- `pnpm run test:coverage` 在 `coverage/unit` 与 `coverage/component` 分别生成终端、HTML 和 lcov 报告。两份报告按 `.ts`/`.tsx` 分层，不合并成一个总百分比。
+- 覆盖率当前只报告，不设 CI 百分比门槛；未测试源码仍必须进入相应报告并显示为 0%。
+
+### 3.2 Node 单元测试示例
+
+```ts
+import assert from 'node:assert/strict'
+import test from 'node:test'
+import { calculateReturn } from './calculate-return'
+
+test('手续费大于收益时返回负收益', () => {
+    assert.equal(calculateReturn({ grossReturn: '1', fee: '2' }), '-1')
+})
+```
+
+### 3.3 React 组件测试示例
+
+```tsx
+import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { expect, test } from 'vitest'
+import { StrategyFilter } from './StrategyFilter'
+
+test('选择运行中状态后展示对应策略', async () => {
+    const user = userEvent.setup()
+    render(<StrategyFilter />)
+
+    await user.selectOptions(screen.getByRole('combobox'), 'running')
+
+    expect(screen.getByText('运行中')).toBeInTheDocument()
+})
+```
+
+组件测试优先通过角色、标签和值等用户可观察入口查询元素。不要断言 CSS Modules class、组件私有状态、Effect 调用顺序或大面积快照。第三方图表等重型实现只测试项目封装的输入、更新与清理契约，不测试第三方库内部绘制结果。
 
 ## 4. 测试写法
 
@@ -56,12 +115,12 @@ entities/strategy/
 - 使用最小、可读的测试数据。金融数据应直接标出单位和精度，不使用来源不明的大型 fixture。
 - 时间、随机数、网络和 Storage 等外部依赖必须被受控；不要让测试依赖当前时间、真实接口、真实账户或执行顺序。
 - 不以快照替代行为断言。快照仅在组件结构本身是稳定、可审查契约时，经明确理由后使用。
-- 新增或修改测试时，运行 `pnpm run test`；涉及类型、lint 或构建规则时同时运行 `pnpm run lint` 与 `pnpm run build`。
+- 新增或修改测试时，运行 `pnpm run test`；涉及测试基础设施、类型、lint 或构建规则时同时运行 `pnpm run test:coverage`、`pnpm run lint` 与 `pnpm run build`。
 
 ## 5. AI 自检清单
 
 1. 改动是否新增或改变了公式、解析、状态、公共能力或已修复缺陷？是则补同目录测试。
 2. 测试是否归属于唯一模块和唯一概念，而不是为了页面数量创建？
 3. 测试验证的是输入输出/可观察行为，而非私有实现？
-4. 当前测试运行器是否支持所需环境？不支持时记录为独立测试基础设施任务，不伪造无法运行的 `.test.tsx`。
+4. `.test.ts` 是否保持 Node 环境，`.test.tsx` 是否只用于真实 React/DOM 行为？
 5. 是否执行并报告 `pnpm run test`，以及改动范围需要的 lint/build？

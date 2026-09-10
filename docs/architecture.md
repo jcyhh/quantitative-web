@@ -84,9 +84,13 @@ Vite 会将 `src` 中被 TS/TSX/SCSS **静态引用**的资源加入构建图；
 | 普通数值运算 | `shared/lib/number`    | UI 几何、动画等非金融 `number` 计算；不可用于业务数据。                                 |
 | 时间         | `shared/lib/time`      | 当前仅提供带默认时区的日期/时间展示；默认时区来自 `sharedConfig.time.defaultTimeZone`。 |
 | 存储         | `shared/lib/storage`   | 受类型约束的 Web Storage 唯一入口。                                                     |
+| 设备能力     | `shared/lib/device`    | PC、平板、H5 分类、浏览器环境判断和原始设备诊断；不负责页面布局或展示文案。             |
+| 位置能力     | `shared/lib/location`  | 浏览器定位、坐标校验和浏览器原始坐标/GCJ-02 转换；不负责权限 UI、IP 定位或地图展示。    |
 | 剪贴板       | `shared/lib/clipboard` | 基于 `copy-to-clipboard` 的文本复制；不包含 UI 提示。                                   |
 | 通知         | `shared/notification`  | 全局用户反馈入口；当前使用原生对话框，后续承接定制通知 Provider/UI。                    |
 | 下载         | `shared/lib/download`  | Blob 或既有 URL 的浏览器下载。                                                          |
+
+`shared/socket` 是与 `shared/api` 平行的实时连接技术 segment。它只负责 Ticket、Socket.IO 握手、消息解析、状态订阅和连接生命周期；业务事件必须留在所属 feature/entity，不能将 PK 协议堆进共享层。
 
 新增基础函数前先检查已有能力是否覆盖。若属于既有能力，添加到该能力目录；若是第二个可独立演进的概念，创建新能力目录和 `index.ts`，并补充本文档、AI 协作指南与验证记录。领域计算（收益、仓位、指标等）留在 `entities` 或 `features`，不得放进 `shared/lib`；它们可以调用 `shared/lib/decimal`，但必须自行定义单位、精度、舍入与边界。`shared/lib/number` 仅服务 UI 几何和动画等非金融场景，不能作为规避十进制精度约束的入口。
 

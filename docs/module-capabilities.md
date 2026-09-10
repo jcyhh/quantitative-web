@@ -46,17 +46,19 @@ Hook 是以 `use` 开头的函数，用来封装可复用的 React 状态、生�
 - i18next 26 + react-i18next 17：统一管理中英文文案和语言切换
 - Sass + CSS Modules：使用 SCSS 编写样式，通过模块作用域避免业务样式互相污染
 - Electron 43 + electron-builder 26：复用同一套 React 渲染层构建桌面端，并负责安装包生成
+- ECharts 6.1：通过 `shared/ui/tld-echart` 提供按需注册的类型化图表组件
 - Feature-Sliced Design：按 `app → pages → widgets → features → entities → shared` 组织模块与依赖方向
-- pnpm 10.28.2 + Node.js 22–24：固定包管理器和运行时范围，保证本地与 CI 安装结果一致
+- pnpm 10.28.2 + Node.js 22.22.2+/24.x：固定包管理器和运行时范围，保证本地与 CI 安装结果一致
 - Oxlint + Stylelint + Prettier：分别约束 TypeScript、SCSS 和代码格式，统一使用 4 空格缩进
-- Node.js Test Runner + tsx：执行公共能力和脚本的轻量单元测试，不额外引入测试运行时框架
+- Node.js Test Runner + tsx：执行 `.test.ts` 公共能力和 Node 脚本测试
+- Vitest + jsdom + Testing Library：执行 `.test.tsx` React 组件、Hook 和 DOM 交互测试
 
 选型考虑：
 
 - 优先保证量化业务的类型安全、金额计算精度和模块边界，而不是只追求快速搭页面
 - Web 与 Electron 共用业务代码，桌面能力统一通过 preload 和受控 IPC 暴露
 - 构建、格式、lint 和测试都提供固定命令，便于本地开发和 CI 使用同一套标准
-- 当前不预装全局状态库、UI 组件库、图表库和请求缓存库，等真实业务场景明确后再选型，避免模板提前绑定技术方案
+- 当前不预装全局状态库、UI 组件库和请求缓存库；图表统一通过 `shared/ui/tld-echart` 使用 ECharts，避免业务页面直接绑定底层实例
 
 这个模板重点封装的是“公共基础能力”，让后续业务页面不要直接碰浏览器 API、浮点计算、主题 DOM 或底层请求。
 
@@ -127,9 +129,27 @@ const result = await apiClient.get<unknown>('/strategies', {
 
 这里故意不封装业务接口和 DTO。API 返回值需要在 `entities` 或 `features` 中校验并转换，不能只依赖泛型断言。
 
-当前没有包含 Token 刷新、业务错误码映射、自动重试、缓存、请求去重和 WebSocket。
+当前没有包含 Token 刷新、业务错误码映射、缓存、请求去重和业务领域 API；Socket Ticket 请求复用该客户端的认证头，连接生命周期由 `shared/socket` 负责。
 
-## 3. 精确金融计算
+## 3. 设备能力
+
+入口：`src/shared/lib/device`
+
+提供 PC、平板、H5 的 client 类型判断、桌面/平板/手机布尔判断、iOS/微信环境判断和原始设备诊断数据。检测结合 UA、触摸能力、屏幕尺寸和指针能力，保留对 iPad 桌面模式、鸿蒙平板和触摸 Windows 设备的边界处理。
+
+设备检测只用于接口 client 标识、运行时行为和诊断；页面布局使用 CSS 媒体查询，不使用设备类型进行整页 rem 缩放。诊断数据不包含中文展示文案，页面应通过 `shared/i18n` 展示。
+
+## 4. WebSocket 连接能力
+
+入口：`src/shared/socket`
+
+基于 Socket.IO 1.7.4 提供 `socketClient` 和 `SocketClient` 工厂，统一完成 `/game-wss/ticket` Ticket 请求、Ticket 字段校验、WebSocket-only 握手、join 响应、消息订阅、连接状态和使用新 Ticket 的自动重连。
+
+业务调用方只传递 `SocketTarget` 和展示用 `userInfo`，之后通过 `onMessage` 订阅消息、通过 `send` 发送业务 envelope。Ticket 返回的 URL、path、频道和角色是唯一信任源，Ticket 不写入环境变量或存储。
+
+该能力不包含 PK 业务事件、presence、rank、倒计时或领域状态；这些内容应在后续 feature/entity 中定义并通过共享连接入口使用。真实 Ticket 联调需要已认证的 API 环境。
+
+## 5. 精确金融计算
 
 入口：`src/shared/lib/decimal`
 
@@ -161,7 +181,7 @@ decimalMultiply('12.35', '20')
 
 金融 API 数据和计算输入优先使用字符串，避免进入计算前就损失精度。
 
-## 4. 普通数值计算
+## 6. 普通数值计算
 
 入口：`src/shared/lib/number`
 
@@ -183,7 +203,7 @@ const centerX = numberAdd(rect.left, numberDivide(rect.width, 2))
 
 项目还会检查私有 TS/TSX 中的原始四则运算，要求调用方明确选择 `decimal` 或 `number`，而不是在业务代码里随意计算。
 
-## 5. 数值展示格式化
+## 7. 数值展示格式化
 
 入口：`src/shared/lib/format.ts`
 
@@ -207,7 +227,7 @@ formatCurrency(1_284_560, 'CNY', 'zh-CN')
 
 格式化模块只负责最终展示，不参与金融计算。调用方需要传入当前语言环境。
 
-## 6. 日期时间封装
+## 8. 日期时间封装
 
 入口：`src/shared/lib/time`
 
@@ -236,7 +256,7 @@ formatDateTime(value, locale, {
 
 当前只封装时间展示，没有日期比较、倒计时、交易日历和交易时段。交易日历属于市场领域，不应直接放进 `shared/lib`。
 
-## 7. LocalStorage 封装
+## 9. LocalStorage 封装
 
 入口：`src/shared/lib/storage`
 
@@ -266,7 +286,7 @@ storage.remove(sharedConfig.storageKeys.theme)
 
 新增键时要同时更新 `sharedConfig.storageKeys`、`StorageSchema`、测试和模块说明。
 
-## 8. 剪贴板封装
+## 10. 剪贴板封装
 
 入口：`src/shared/lib/clipboard`
 
@@ -291,7 +311,7 @@ if (copied) {
 
 这个模块只负责复制，成功或失败提示由调用方根据真实结果和当前语言处理。
 
-## 9. 文件下载封装
+## 11. 文件下载封装
 
 入口：`src/shared/lib/download`
 
@@ -306,14 +326,15 @@ if (copied) {
 - 文本内容生成 Blob
 - 临时 `<a>` 元素创建和移除
 - Object URL 创建和异步回收
+- PDF、TXT、JSON、XML、XHTML、SVG 等可内联 MIME 的下载 Blob 转为 `application/octet-stream`
 
 ```ts
 downloadText(JSON.stringify(strategy), 'strategy.json', 'application/json;charset=utf-8')
 ```
 
-下载模块只负责浏览器触发。文件内容、文件名、MIME 类型、导出权限和敏感数据处理由调用方负责。
+下载模块只负责浏览器触发。文件内容、文件名、MIME 类型、导出权限和敏感数据处理由调用方负责。Blob 下载会设置 `download` 属性，并对可内联展示的 MIME 使用附件型 MIME，尽量避免 PDF/TXT 被浏览器直接打开；跨域已有 URL 是否下载仍取决于服务端的 `Content-Disposition: attachment`，因为浏览器可能忽略跨域链接的 `download` 属性。
 
-## 10. 用户通知封装
+## 12. 用户通知封装
 
 入口：`src/shared/notification`
 
@@ -337,7 +358,7 @@ const confirmed = notification.confirm(t('strategy.confirmDelete'))
 
 当前内部仍使用浏览器原生对话框。以后可以在 `shared/notification` 内替换为 Toast、通知队列或自定义确认框，不需要修改业务侧调用入口。
 
-## 11. 主题系统封装
+## 13. 主题系统封装
 
 入口：
 
@@ -374,7 +395,7 @@ changeTheme(theme === 'dark' ? 'light' : 'dark')
 
 新增主题时要同步主题注册、完整 token、中英文主题名和已有页面验证。
 
-## 12. 多语言封装
+## 14. 多语言封装
 
 入口：`src/shared/i18n`
 
@@ -403,7 +424,7 @@ changeLanguage('en-US')
 
 所有用户可见文本都应进入语言包。新增文案必须同时补充中文和英文，新增语言必须完整补齐所有 key。
 
-## 13. PWA 安装生命周期
+## 15. PWA 安装生命周期
 
 入口：`src/shared/lib/pwa`
 
@@ -430,7 +451,7 @@ const { canInstall, isInstalled, supportsInstall, install } = usePwaInstall()
 
 当前项目没有真正启用 PWA，不包含 manifest、Service Worker、离线缓存、安装按钮和更新策略。这一层只是安装生命周期预留。
 
-## 14. 项目常量封装
+## 16. 项目常量封装
 
 入口：`src/shared/constants`
 
@@ -452,17 +473,18 @@ projectConstants.assets.iconSpritePath
 
 常量模块只放跨页面稳定且不随环境变化的项目标识，不放环境配置、用户文案或领域数据。
 
-## 15. 公共 UI 封装
+## 17. 公共 UI 封装
 
 入口：`src/shared/ui`
 
-三方库：`react`（`^19.2.8`）和 `react-i18next`（`^17.0.11`）；主题与数值格式化复用项目内部公共能力
+三方库：`react`（`^19.2.8`）、`react-i18next`（`^17.0.11`）和 `echarts`（`^6.1.0`）；主题与数值格式化复用项目内部公共能力
 
 当前提供：
 
 - `MetricCard`
 - `LanguageSwitcher`
 - `ThemeSwitcher`
+- `TldEChart`
 
 `MetricCard` 封装标签、主要值、变化信息、正负趋势样式和附加内容：
 
@@ -479,9 +501,30 @@ projectConstants.assets.iconSpritePath
 
 `LanguageSwitcher` 和 `ThemeSwitcher` 分别复用统一的语言、主题状态，不自行维护另一套配置或 Storage。
 
+`TldEChart` 负责 ECharts 实例的初始化、option 更新、尺寸监听和卸载销毁；页面只传递类型化 option 与可访问名称：
+
+```tsx
+import { useMemo } from 'react'
+import { TldEChart, type EChartOption } from 'src/shared/ui/tld-echart'
+
+const option: EChartOption = useMemo(
+    () => ({
+        tooltip: { trigger: 'axis' },
+        xAxis: { type: 'category', data: ['周一', '周二', '周三'] },
+        yAxis: { type: 'value' },
+        series: [{ type: 'line', data: [120, 132, 101] }],
+    }),
+    [],
+)
+
+return <TldEChart option={option} ariaLabel="收益曲线" height={280} />
+```
+
+颜色应读取 `readEChartCssVariable('--color-positive')` 等语义 token；业务数据、空态、错误态和单位说明留在所属 page/widget 或实体/功能模块。完整边界与按需注册说明见 [`src/shared/ui/tld-echart/README.md`](../src/shared/ui/tld-echart/README.md)。
+
 后续新增公共 UI 使用 `tld-<component>` 目录和 `Tld<Component>` React 导出名；业务组件不使用这个前缀。
 
-## 16. 全局样式封装
+## 18. 全局样式封装
 
 入口：`src/app/styles/index.scss`
 
@@ -494,7 +537,7 @@ projectConstants.assets.iconSpritePath
 - `_fonts.scss`：Sans、Mono 字体栈和字体登记入口
 - `_reset.scss`：浏览器默认样式归一
 - `_init.scss`：根节点和页面基础样式
-- `_mixins.scss`：1280px 紧凑桌面断点
+- `_mixins.scss`：H5、平板、桌面和 1279px 紧凑桌面边界
 - `_motion.scss`：View Transition 全局动效兜底
 - `_utilities.scss`：`tld-` 前缀工具类
 
@@ -514,13 +557,13 @@ Utility 包含 Flex、Grid、1–12 列、尺寸、溢出、文本流、多行�
 - 高频的 Flex、Grid、间距、字号和文本流已经由受控的 `tld-*` Utility 提供，无需同时维护两套 Utility 体系
 - 复杂组件视觉保留在 `*.module.scss`，比长串 className 更适合表达量化表格、面板和状态组合
 - Stylelint 已能检查原始颜色、class 命名和重复 Utility，让当前样式边界可以在 CI 中直接执行
-- 当前仅实现桌面端和一个紧凑桌面断点，引入完整的响应式 Utility 框架收益有限，还会增加依赖、配置和升级成本
+- 当前采用 SCSS + CSS Modules 覆盖 Web 端 PC、平板和 H5 的受控响应式场景；引入完整的响应式 Utility 框架收益有限，还会增加依赖、配置和升级成本
 
 这不是否定 Tailwind CSS，而是当前项目优先选择“SCSS + CSS Modules + 语义 Token + 受控 Utility”的组合。若未来出现大量页面快速搭建、统一 Utility 设计系统或更多响应式场景，应单独评估迁移方案，不能让 Tailwind 与现有规则长期并行。
 
-当前只验收最低 1024px 的桌面端，1280px 是紧凑桌面断点；不做 px-to-rem、px-to-vw 或手机端结构。
+当前 Web 端验收 H5、平板和桌面端，断点为 `<768px`、`768px–1023px`、`>=1024px`，1279px 及以下为紧凑桌面、1280px 起为完整桌面；不做 px-to-rem、px-to-vw 或整页等比缩放。
 
-## 17. 路由与应用骨架封装
+## 19. 路由与应用骨架封装
 
 入口：
 
@@ -546,7 +589,7 @@ Utility 包含 Flex、Grid、1–12 列、尺寸、溢出、文本流、多行�
 
 路由层只负责装配，不承载请求和业务状态。资源 ID 使用 `/strategies/:strategyId` 这样的语义路径参数，不能放进 `?id=`。
 
-## 18. Electron 桌面桥接封装
+## 20. Electron 桌面桥接封装
 
 入口：
 
@@ -582,7 +625,7 @@ window.quantLabDesktop.getAppVersion(): Promise<string>
 
 当前没有配置签名、公证、自动更新和正式产品图标；桌面端连接后端前，还需要确定 API 地址、认证会话和网络策略。
 
-## 19. 工程约束封装
+## 21. 工程约束封装
 
 入口：
 
@@ -596,7 +639,8 @@ window.quantLabDesktop.getAppVersion(): Promise<string>
 
 - 构建与类型：`vite`（`^8.2.0`）、`@vitejs/plugin-react`（`^6.0.4`）、`typescript`（`~6.0.2`）
 - 格式与检查：`prettier`（`^3.9.6`）、`oxlint`（`^1.75.0`）、`stylelint`（`^17.14.1`）、`stylelint-config-standard-scss`（`^17.0.0`）、`postcss-scss`（`^4.0.9`）
-- 测试执行：`tsx`（`^4.23.12`）和 Node.js 内置 Test Runner
+- 测试执行：`tsx`（`^4.23.12`）与 Node.js Test Runner 负责 `.test.ts`/`.test.mjs`；`vitest`（`5.0.0`）、`jsdom`（`29.1.1`）和 Testing Library 负责 `.test.tsx`
+- 覆盖率：`c8`（`12.0.0`）统计 `.ts`，`@vitest/coverage-v8`（`5.0.0`）统计 `.tsx`
 - 图片处理：`sharp`（`^0.35.3`），只由显式资源优化脚本使用
 
 提供：
@@ -619,11 +663,37 @@ window.quantLabDesktop.getAppVersion(): Promise<string>
 - 公共模块 README 完整性检查
 - 团队 AI Skill 完整性检查
 - 大型静态 PNG 到 WebP 的显式迁移和失败回滚
-- GitHub Actions lint、测试、Web 构建和 Electron 编译
+- 测试源码 strict TypeScript 检查、Node 单测、React 组件测试和分层覆盖率报告
+- GitHub Actions lint、测试覆盖率 artifact、Web 构建和 Electron 编译
 
-当前自动测试覆盖语言 key、剪贴板、十进制运算、普通数值运算、通知入口和 PNG 资源迁移工具。现有测试环境还不包含 DOM 组件测试和 E2E。
+当前自动测试覆盖语言 key、剪贴板、十进制运算、普通数值运算、设备判断、下载、位置转换、通知入口、Socket 连接、语言切换组件、ECharts 生命周期和 PNG 资源迁移工具。覆盖率分别输出到 `coverage/unit` 与 `coverage/component`；当前不设置百分比门槛，也不包含真实浏览器 E2E。
 
-## 20. 当前封装边界
+## 22. 位置能力封装
+
+入口：`src/shared/lib/location`
+
+三方库：无，基于浏览器 Geolocation API 和公共数值运算能力
+
+提供：
+
+- `getCurrentLocation`
+- `wgs84ToGcj02`
+- `LocationError`
+- 浏览器原始坐标与 GCJ-02 坐标选择
+- 坐标范围校验和标准化定位错误
+
+默认调用返回浏览器 Geolocation API 提供的原始坐标（通常为 WGS-84）；需要提交国标地图服务时显式选择 GCJ-02：
+
+```ts
+import { getCurrentLocation } from 'src/shared/lib/location'
+
+const browserCoordinate = await getCurrentLocation()
+const gcj02Coordinate = await getCurrentLocation({ coordinateSystem: 'gcj02' })
+```
+
+该模块只处理浏览器定位、坐标校验和坐标转换，不负责权限弹窗、IP 定位、注册归属地、地图 SDK 或业务接口提交；页面应根据 `LocationError.code` 自行提供本地化反馈。完整错误码、定位参数和扩展边界见 [`src/shared/lib/location/README.md`](../src/shared/lib/location/README.md)。
+
+## 23. 当前封装边界
 
 这套模板已经把公共技术入口搭好，但下面这些仍不是已完成功能：
 
@@ -631,13 +701,13 @@ window.quantLabDesktop.getAppVersion(): Promise<string>
 - 真实策略管理和运行控制
 - 回测任务、进度和结果
 - 因子、数据集和研究任务
-- 实时行情、WebSocket 和真实图表
+- 实时行情和真实图表
 - 组合、持仓、风险敞口和归因
 - 下单、撤单和订单状态机
 - 后端 DTO 校验和业务错误码映射
+
 - 自定义通知 UI
 - 完整 PWA 能力
-- 移动端页面
 - Electron 签名、公证和自动更新
 
 后续业务开发应该优先复用上述公共入口，再在所属 `entities`、`features`、`widgets` 和 `pages` 中补充真实业务契约，避免在页面中重新实现一套请求、计算、时间、存储或浏览器能力。

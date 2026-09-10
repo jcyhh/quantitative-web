@@ -45,8 +45,7 @@ export function useThemeTransition({ originRef, duration = 400, enabled = true }
             const updateTheme = (): void => {
                 flushSync(() => setTheme(nextTheme))
             }
-            const startViewTransition = document.startViewTransition
-            const canAnimate = enabled && !prefersReducedMotion() && startViewTransition !== undefined
+            const canAnimate = enabled && !prefersReducedMotion() && document.startViewTransition !== undefined
 
             if (!canAnimate) {
                 updateTheme()
@@ -58,7 +57,7 @@ export function useThemeTransition({ originRef, duration = 400, enabled = true }
                 Math.max(x, numberSubtract(window.innerWidth, x)),
                 Math.max(y, numberSubtract(window.innerHeight, y)),
             )
-            const transition = startViewTransition(updateTheme)
+            const transition = document.startViewTransition(updateTheme)
 
             void transition.ready
                 .then(() => {

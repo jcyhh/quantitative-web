@@ -1,0 +1,10 @@
+{
+    "all": true,
+    "include": ["src/**/*.ts"],
+    "exclude": ["src/**/*.test.ts", "src/**/*.d.ts", "src/**/*.tsx"],
+    "extension": [".ts"],
+    "exclude-after-remap": true,
+    "reporter": ["text", "html", "lcov"],
+    "reports-dir": "coverage/unit",
+    "temp-directory": "node_modules/.cache/c8"
+}

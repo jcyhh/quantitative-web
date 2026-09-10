@@ -86,7 +86,8 @@ app → pages → widgets → features → entities → shared
 - 不在前端写入真实密钥、账户、令牌或生产数据。公开给浏览器的环境变量使用 `VITE_` 前缀，并提供 `.env.example` 与 `.env.development.example` 的脱敏示例；真实 `.env.development` 必须忽略且不得提交。
 - 仅可公开给浏览器的数据使用 `VITE_` 前缀；密钥、令牌和内网敏感配置不得进入任何前端环境文件。环境文件与本地代理规则见 [环境配置](./environment.md)。
 - 金额、收益率、日期等展示统一使用 `shared/lib` 中的格式化函数；不要各页自行格式化。展示格式须传入当前语言环境。
-- `shared/lib` 不是万能 `utils`：数值展示只使用 `shared/lib/format`，日期/时间展示只使用 `shared/lib/time`，文件下载只使用 `shared/lib/download`。外部代码只能从各能力的 `index.ts` 导入。
+- `shared/lib` 不是万能 `utils`：数值展示只使用 `shared/lib/format`，日期/时间展示只使用 `shared/lib/time`，文件下载只使用 `shared/lib/download`，位置获取只使用 `shared/lib/location`。外部代码只能从各能力的 `index.ts` 导入。
+- 位置获取必须显式区分浏览器原始坐标和 GCJ-02 坐标：默认 `getCurrentLocation()` 返回浏览器原始坐标，需要国标坐标时传入 `{ coordinateSystem: 'gcj02' }`；业务模块不得复制 Geolocation API、GCJ-02 算法或权限错误映射。
 - 基础十进制运算只从 `shared/lib/decimal` 导入 `decimalAdd`、`decimalSubtract`、`decimalMultiply`、`decimalDivide`。输入与结果优先用字符串；禁止业务模块直接导入 `decimal.js`，Oxlint 会阻断。该模块固定为 40 位有效数字和 `ROUND_HALF_UP`，除以零会抛错。
 - 任何私有 TypeScript/TSX 文件禁止出现原始 `+`、`-`、`*`、`/`、复合赋值及 `++`/`--`。`pnpm run lint` 的 AST 检查会阻断；加减乘除只能从 `shared/lib/decimal`（金融/业务数据）或 `shared/lib/number`（仅 UI 几何、动画等非金融数据）导入。文本拼接使用模板字符串，不使用 `+`。两个模块自身是唯一实现豁免，禁止扩大豁免范围或跳过脚本。
 - `shared/lib/decimal` 解决 JavaScript 二进制浮点误差，不定义业务口径。收益、回撤、手续费、仓位等公式仍放在所属 `entities` 或 `features`，必须声明单位、精度、舍入、边界并补单元测试。
@@ -96,7 +97,7 @@ app → pages → widgets → features → entities → shared
 - 服务端时间字符串若表达一个确定时刻，必须带时区。日期比较、倒计时和交易日等能力尚未立项；有明确需求后再按独立能力补充，不要自行实现临时工具函数。
 - Oxlint 会禁止 `shared/lib/time` 以外的 `Date`（包括 `new Date`、`Date.now`、`Date.parse`）与 `Intl.DateTimeFormat`。需要新的日期/时间能力时，先在 `shared/lib/time` 封装、从其 `index.ts` 导出、补充本规范与 AI 协作指南，再由业务模块调用；不得用 lint 忽略或在私有文件实现。
 - 禁止复用基于 JavaScript `number` 的“精确四则运算”作为金额、价格、数量或收益计算方案。通用四则运算使用 `shared/lib/decimal`；量化计算的精度、舍入、最小单位和领域公式仍必须在 `entities`/`features` 中明确设计和测试。
-- 下载内容由调用方确定文件名、MIME 类型与权限；`downloadFile` 只负责浏览器触发。
+- 下载内容由调用方确定文件名、MIME 类型与权限；`downloadFile` 通过带 `download` 属性的临时链接触发浏览器下载，并将 PDF/TXT 等可内联展示的 Blob MIME 转为 `application/octet-stream`。跨域 URL 的下载属性可能被浏览器忽略，必须由服务端返回 `Content-Disposition: attachment`，或由调用方先获取 Blob。
 - 多语言资源放在 `shared/i18n/locales`；不得在组件中硬编码面向用户的文案。当前仅维护 `zh-CN` 与 `en-US` 两种语言；新增语言需先获得明确确认，并同时补全所有 key、在 `supportedLanguages` 注册。
 - 量化项目跨页面高频显示词优先复用 `terms.*`（如 `terms.strategy`、`terms.backtest`、`terms.maxDrawdown`），不要在页面重复造同义 key。`terms` 只放短词或短语；完整业务句子仍归属对应页面/功能的语言分组。
 
@@ -142,7 +143,7 @@ src/app/styles/
 - 当前允许的类别：Flex/Grid 布局、流式尺寸、溢出与文本流、无业务含义的交互、Safe Area、以及 2px/5px 间距尺度。禁止添加颜色、主题、阴影、业务状态、组件外观或响应式显示工具类。
 - `tld-fs-{n}`：2–200px 间能被 2 或 5 整除的字号；`tld-m*` / `tld-p*`：0–200px 同尺度的内外边距；`tld-gap-{n}`：真实 CSS `gap`；`tld-spacer-{n}`：全宽的垂直占位块。`gap` 不能被当作占位块使用。
 - 工具类只用于降低无业务结构的重复代码。一个元素需要多个工具类才能表达完整组件布局，或涉及颜色、边框、图表、卡片、业务状态时，改写为该模块的 `*.module.scss`。
-- 当前只做桌面端；Safe Area 工具类仅为未来移动端保留，不得据此擅自补充手机布局。
+- Web 端正式支持 PC、平板和 H5；Electron 仍只承诺桌面端。Safe Area 工具类可用于 H5 底部导航和刘海屏安全区，但业务布局仍必须放在所属模块样式中。
 - Stylelint 会在后续模块样式中阻止与 Utility 完全等价的声明：Flex/Grid 展示与常用对齐、2px/5px 尺度的字号、margin、padding、gap。错误会提示改用 `tld-*`。复杂 Grid 模板、定位、图表和业务视觉不在此禁用范围，仍应使用模块 SCSS。
 - Stylelint 同时禁止除 `_colors.scss` 与 `_tokens.scss` 外的 SCSS 中出现十六进制、命名颜色以及 `rgb()`、`hsl()` 等原始颜色函数（包括阴影、渐变和 filter 内的颜色）。固定色只维护在 `_colors.scss`，主题语义色只维护在 `_tokens.scss`；模块中使用 `var(--color-*)`。不得通过私有 CSS 变量重新定义颜色。
 - 初始骨架样式列在 `stylelint.config.mjs` 的 `legacyStyleFiles` 中，仅作为过渡豁免；新增模块不得加入该列表，也不得通过 `stylelint-disable` 绕过规则。需要扩展 Utility 能力时，先补 `_utilities.scss`、文档和 lint 映射，再使用。
@@ -158,16 +159,16 @@ src/app/styles/
 
 1. 设计稿标注的常规尺寸直接使用 `px`：1920 设计稿中的 `100px` 在代码中就写 `100px`。**禁止**引入 px-to-rem / px-to-viewport PostCSS 插件，**禁止**用媒体查询修改 `html` 或 `:root` 的 `font-size` 来做整体缩放。
 2. 仅标题字号、首屏高度、页面级间距等需要连续变化的少数视觉尺寸使用 `clamp(最小值, vw 值, 最大值)`。不要把所有尺寸机械替换为 `vw` 或 `clamp()`。
-3. **当前阶段只验收桌面端**，覆盖常见桌面视口（最低 1024px、1280px、1440px、1920px）。`1280px` 是紧凑桌面断点，可用于收缩侧栏、调整栅格和间距。不得在当前阶段擅自定义手机导航、卡片层级、隐藏规则或手机专用视觉稿。
-4. 桌面布局仍必须为后续适配留出空间：容器使用 `min()` / `max()` / `clamp()` 和合理的最大宽度；栅格使用 `minmax()`；弹性子项设置 `min-width: 0`；表格、图表等密集内容保留最小可读宽度并由外层允许横向滚动。不要用固定画布宽度或绝对定位堆砌整个页面。
-5. 后续开始移动端设计时，先补充设计与验收范围，再新增 `767px` 等移动断点和移动专用结构。届时优先重排信息层级或使用专用组件，而非等比缩小桌面界面；该工作应作为单独任务记录。
+3. Web 端响应式断点固定为：`<768px` H5、`768px–1023px` 平板、`>=1024px` 桌面；`1279px` 及以下是紧凑桌面，`1280px` 起使用完整桌面侧栏。Electron 继续按桌面窗口验收。
+4. 所有端都必须使用流式容器、`minmax()` 栅格和 `min-width: 0`；表格、图表等密集内容保留最小可读宽度并由外层允许横向滚动。H5 优先重排信息层级，不等比缩小桌面画布，也不使用设备类型替代 CSS 布局。
+5. Safe Area 只通过已有 `tld-safe-*` 工具类或模块样式使用；新增 H5 专用结构必须放入所属 widget/page，而不是加入全局业务样式。
 
 新增或修改样式前，AI 必须先确认它属于全局 token、模块样式或响应式例外中的哪一种；无法归类时先询问，不得把样式随意放入 `app/styles`。
 
 - 优先复用 `shared/ui` 基础组件及现有设计 token；跨页区块放入 `widgets`。
 - 样式不得依赖页面 DOM 层级偶然成立。使用语义明确、局部可理解的 class 名称。
-- 新页面至少保证当前定义的桌面端视口可用；无障碍适配不属于本项目当前范围。
-- 图表先明确数据契约、空态和错误态，再接入图表库。不要为一个页面临时引入重量级依赖。
+- 新页面至少保证当前定义的 Web 端 H5、平板和桌面视口可用；无障碍适配不属于本项目当前范围。
+- 图表先明确数据契约、空态和错误态，再通过 `shared/ui/tld-echart` 接入 ECharts；页面不得直接初始化或销毁 ECharts 实例，也不要为单个页面重复引入图表依赖。
 - PWA 当前未启用。仅可复用 `shared/lib/pwa` 的 Hook；`main.tsx` 中的安装事件监听用于保留浏览器事件，禁止自行添加 manifest、Service Worker、缓存策略、PWA 插件或安装入口；完整边界见 [PWA 预留能力](./pwa.md)。
 
 ## 7. Git 与多人协作
@@ -196,7 +197,7 @@ AI 实现时必须：
 2. 沿用现有命名、代码风格和公共 API 模式。
 3. 不为“看起来更完整”而填充虚假生产数据或实现未要求的交易行为。
 4. 将不确定性、假设和待接入的后端契约标注清楚。
-5. 遵守第 6 节的强制样式架构：模块使用 `*.module.scss`；仅 `app/styles` 可写全局样式；设计稿 px 直接使用，不得引入 rem 根字号缩放或 px 自动转换方案。当前仅实现和验收桌面端，不得擅自补充手机视觉逻辑。
+5. 遵守第 6 节的强制样式架构：模块使用 `*.module.scss`；仅 `app/styles` 可写全局样式；设计稿 px 直接使用，不得引入 rem 根字号缩放或 px 自动转换方案。Web 端必须按 CSS-first 方案覆盖 H5、平板和桌面断点；Electron 仍只按桌面窗口验收。
 
 AI 完成时必须：
 

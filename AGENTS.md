@@ -24,7 +24,7 @@
 
 TypeScript 使用 strict 模式：禁止 `any`、非空断言和无校验的外部数据断言；所有具名函数与类方法必须标注返回类型。对象契约使用 `interface`，联合/映射/泛型组合使用 `type`；请求 DTO、领域模型与 UI Props 必须分层定义。完整规则见 [TypeScript 规范](./docs/typescript-standards.md)。
 
-测试按模块与可验证行为就近组织，不按页面数量创建。公式、解析、状态转换、公共能力和缺陷修复必须补同目录单元测试；纯页面组合或静态布局通常不测。当前仅支持 `.test.ts` 基础测试，组件交互与 E2E 出现真实需求后再独立立项，详见 [测试规范](./docs/testing-standards.md)。
+测试按模块与可验证行为就近组织，不按页面数量创建。公式、解析、状态转换、公共能力和缺陷修复必须补同目录单元测试；纯页面组合或静态布局通常不测。`.test.ts` 使用 Node Test Runner，`.test.tsx` 使用 Vitest + jsdom + Testing Library；E2E 在稳定跨页面流程出现后再独立立项，详见 [测试规范](./docs/testing-standards.md)。
 
 业务资源就近归属到拥有它的模块 `assets/`，禁止建立全局 `src/assets` 收纳目录。资源有第二个真实消费者时，移动到共同允许依赖的最低层并经 `index.ts` 公开导入，删除原副本；同层业务 slice 禁止深层导入彼此资源。详见 [资源归属与提升规则](./docs/architecture.md#资源归属与提升规则)。
 
@@ -34,7 +34,7 @@ TypeScript 使用 strict 模式：禁止 `any`、非空断言和无校验的外�
 
 路由采用语义化资源路径：ID 使用领域路径参数，如 `/strategies/:strategyId`，不得使用 `?id=` 或通用 `/detail/:id`。查询参数只用于筛选、排序、分页、Tab 等可选视图状态；当前内部系统处于 `noindex` 阶段，不能以 SEO 为理由虚构公开站点配置。
 
-样式是强制约束：统一使用 SCSS；只有 `src/app/styles` 能写全局 token、重置和断点工具，页面、Widget、Feature、Entity 与 `shared/ui` 的样式必须就近使用 `*.module.scss`。设计稿的常规尺寸直接写 px；严禁 px-to-rem/px-to-vw 自动转换，以及通过修改根字号实现整体响应式缩放。当前阶段只实现桌面端（最低 1024px），以 1280px 作为紧凑桌面断点；使用流式容器、`minmax()`、`min-width: 0` 和可滚动的密集数据区域为后续移动端留出空间，但不得擅自设计或实现手机端结构。
+样式是强制约束：统一使用 SCSS；只有 `src/app/styles` 能写全局 token、重置和断点工具，页面、Widget、Feature、Entity 与 `shared/ui` 的样式必须就近使用 `*.module.scss`。设计稿的常规尺寸直接写 px；严禁 px-to-rem/px-to-vw 自动转换，以及通过修改根字号实现整体响应式缩放。Web renderer 正式支持 H5、平板和桌面端，断点为 `<768px`、`768px–1023px`、`>=1024px`，1279px 及以下使用紧凑桌面布局、1280px 起使用完整桌面布局；Electron 仍只承诺桌面端。响应式布局使用媒体查询、流式容器、`minmax()`、`min-width: 0` 和可滚动的密集数据区域，设备识别结果不得作为整页布局或缩放依据。
 
 全局样式只能从 `src/app/styles/index.scss` 进入；字体登记、token、mixin、reset、初始化和动效必须分文件维护。组件只可按需引用 `_mixins.scss`，不得引用全局入口或把业务视觉写入 `app/styles`。
 

@@ -71,7 +71,7 @@ export const enUS = {
         equityCurve: 'Equity curve',
         equityCurveDescription: 'Portfolio net value · Last 30 trading days',
         viewDetails: 'View details',
-        chartEmpty: 'Connect a market-data service to display the live equity curve',
+        chartPreview: 'Sample data for now; connect a market-data service for the live equity curve',
         activity: 'Recent activity',
         activityOne: 'CSI 300 Momentum Rotation completed today’s rebalance',
         activityTwo: 'Neutral Multi-factor Selection backtest completed',

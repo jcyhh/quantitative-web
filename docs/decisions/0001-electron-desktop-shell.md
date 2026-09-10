@@ -2,7 +2,7 @@
 
 ## Background
 
-The product will distribute the existing React application as a browser application and a desktop application for macOS and Windows. Mobile clients are explicitly out of scope. The renderer must remain reusable as a normal Web application while later desktop-only capabilities can safely access the operating system.
+The product distributes the existing React application as a browser application and a desktop application for macOS and Windows. The browser renderer supports PC, tablet and H5 layouts; Electron remains a desktop host and is not a mobile runtime. The renderer must remain reusable as a normal Web application while later desktop-only capabilities can safely access the operating system.
 
 ## Decision
 

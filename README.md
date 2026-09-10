@@ -6,6 +6,8 @@
 
 ## 开始开发
 
+本地使用 Node.js `^22.22.2` 或 `^24.0.0`，包管理器固定为 pnpm `10.28.2`。
+
 ```bash
 pnpm install
 cp .env.development.example .env.development
@@ -48,7 +50,10 @@ src/
 - `pnpm run format`：使用 Prettier 按 4 空格规范格式化全部可解析的源码、配置与 Markdown 文档
 - `pnpm run format:check`：只检查格式，不修改文件；已包含在 `pnpm run lint` 中
 - `pnpm run lint`：执行 TypeScript/React 与 SCSS 规范检查
-- `pnpm run test`：执行基础能力单元测试
+- `pnpm run test`：严格检查测试类型，并执行 Node 单元测试与 React 组件测试
+- `pnpm run test:unit` / `pnpm run test:component`：分别执行 `.test.ts` 与 `.test.tsx`
+- `pnpm run test:unit:watch` / `pnpm run test:component:watch`：监听对应测试
+- `pnpm run test:coverage`：生成 `coverage/unit` 与 `coverage/component` 两份覆盖率报告
 
 项目唯一包管理器为 pnpm `10.28.2`。禁止使用 npm、yarn、npx、bun 或其他锁文件执行项目命令；执行守卫会阻断错误包管理器及 `package-lock.json`、`yarn.lock` 等混入。新增依赖使用 `pnpm add <package>` 或 `pnpm add -D <package>`，并在同一提交更新 `package.json` 与 `pnpm-lock.yaml`。
 
@@ -56,21 +61,22 @@ pnpm 默认不执行依赖的安装期脚本，只有已审查且记录在 `pnpm
 
 Prettier 是仅用于本地和 CI 格式检查的开发依赖，不进入运行时产物。当前版本无运行时依赖和安装脚本，因此不需要加入依赖构建白名单；`.editorconfig` 与 `.prettierrc.json` 共同固定 4 空格、空格缩进和现有无分号/单引号风格。
 
-GitHub Actions 会在推送和 PR 中执行格式检查、lint、测试、生产/预发布 Web 构建和 Electron host 编译；工作流见 `.github/workflows/ci.yml`。带签名的桌面安装包由单独的发布任务在相应平台构建。
+GitHub Actions 会在推送和 PR 中执行格式检查、lint、分层测试与覆盖率、生产/预发布 Web 构建和 Electron host 编译；覆盖率以 `test-coverage` artifact 保留 14 天，工作流见 `.github/workflows/ci.yml`。带签名的桌面安装包由单独的发布任务在相应平台构建。
 
 ## 基础能力
 
 - 路由：`src/app/router/router.tsx` 集中维护，使用 HTML5 History 模式，支持页面懒加载与路由错误页。资源详情使用语义化路径参数（如 `/strategies/:strategyId`），查询参数仅用于可选视图状态；生产环境需将所有非静态页面请求回退至 `index.html`。
 - 请求：从 `src/shared/api` 导入 `apiClient`；基础地址由 `VITE_API_BASE_URL` 配置，参考 `.env.example`。
 - 多语言：从 `src/shared/i18n` 管理；当前仅支持简体中文与 English，可通过顶栏切换。开发/预发布默认中文，生产默认 English。
-- 公共配置：从 `src/shared/config` 导入，集中维护应用、接口、语言、默认展示时区、分页与本地存储的默认设置；LocalStorage 从 `src/shared/lib/storage` 统一读写。
+- 公共配置：从 `src/shared/config` 导入，集中维护应用、接口、语言、默认展示时区、分页、本地存储和实时连接默认设置；LocalStorage 从 `src/shared/lib/storage` 统一读写。
 - 项目常量：从 `src/shared/constants` 导入 `projectConstants`，集中维护项目短名、缩写和公共静态资源路径；环境可覆盖的应用名称仍由 `shared/config` 管理。
-- 基础工具：展示数值使用 `src/shared/lib/format`；日期使用 `src/shared/lib/time`；文件下载使用 `src/shared/lib/download`。不要新建万能 `utils` 目录。
+- 基础工具：展示数值使用 `src/shared/lib/format`；日期使用 `src/shared/lib/time`；文件下载使用 `src/shared/lib/download`；设备能力使用 `src/shared/lib/device`；位置获取使用 `src/shared/lib/location`；实时连接使用 `src/shared/socket`。不要新建万能 `utils` 目录。
+- 图表：从 `src/shared/ui/tld-echart` 使用 `TldEChart`；底层只在共享组件内注册和管理 ECharts，页面负责 option、数据契约和本地化说明。
 - 剪贴板：从 `src/shared/lib/clipboard` 使用 `await copyText`；底层固定使用哇学社线上验证过的 `copy-to-clipboard`，调用方按 `Promise<boolean>` 结果自行显示多语言反馈。
 - 通知：从 `src/shared/notification` 导入 `notification`。当前临时使用原生对话框，已预留 `success`、`info`、`warning`、`error`、`confirm` 方法；后续定制通知 UI 只替换内部实现。
 - 精确运算：从 `src/shared/lib/decimal` 使用 `decimalAdd`、`decimalSubtract`、`decimalMultiply`、`decimalDivide`；输入和结果优先使用字符串，业务公式仍留在对应领域模块。
 - 普通数值运算：仅 UI 几何、动画等非金融场景可从 `src/shared/lib/number` 使用 `numberAdd`、`numberSubtract`、`numberMultiply`、`numberDivide`；禁止用于金额、价格、数量和收益。
-- 响应式样式：使用 SCSS + CSS Modules。全局 token、断点与重置在 `src/app/styles`；业务模块就近维护 `*.module.scss`。当前仅验收最低 1024px 的桌面端，并在 1280px 做紧凑桌面布局；使用流式容器和弹性栅格为后续移动端适配留出空间。设计稿常规尺寸可直接写 px。
+- 响应式样式：使用 SCSS + CSS Modules。全局 token、断点与重置在 `src/app/styles`；业务模块就近维护 `*.module.scss`。Web 端支持 PC、平板和 H5：`<768px` 为 H5、`768px–1023px` 为平板、`>=1024px` 为桌面，`1279px` 及以下为紧凑桌面、`1280px` 起为完整桌面。布局由 CSS 媒体查询负责，不使用 rem 整体缩放；设计稿常规尺寸可直接写 px。
 - 桌面应用：Electron 壳位于 `electron/`，以 `quantlab://` 本地协议加载 `dist/production/` 的同一套 React SPA。主进程默认开启 context isolation 与 sandbox、关闭 renderer Node integration；桌面 API 仅可通过受限 preload + IPC 增加，完整扩展步骤见 [electron/README.md](electron/README.md)。
 
 环境配置与本地 API 联调见 [docs/environment.md](docs/environment.md)。

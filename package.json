@@ -6,7 +6,7 @@
     "type": "module",
     "main": "dist/electron/main.js",
     "engines": {
-        "node": ">=22 <25",
+        "node": "^22.22.2 || ^24.0.0",
         "pnpm": ">=10 <11"
     },
     "packageManager": "pnpm@10.28.2",
@@ -31,25 +31,42 @@
         "lint:module-docs": "node scripts/enforce-pnpm.mjs && node scripts/validate-module-docs.mjs",
         "lint:arithmetic": "node scripts/enforce-pnpm.mjs && node scripts/check-no-private-arithmetic.mjs",
         "lint:styles": "node scripts/enforce-pnpm.mjs && stylelint \"src/**/*.scss\"",
-        "test": "node scripts/enforce-pnpm.mjs && tsx --test \"src/**/*.test.ts\" && node --test scripts/optimize-static-png-assets.test.mjs",
+        "test": "node scripts/enforce-pnpm.mjs && pnpm run test:typecheck && pnpm run test:unit && pnpm run test:component",
+        "test:typecheck": "node scripts/enforce-pnpm.mjs && tsc -p tsconfig.test.json",
+        "test:unit": "node scripts/enforce-pnpm.mjs && tsx --test \"src/**/*.test.ts\" && node --test scripts/optimize-static-png-assets.test.mjs",
+        "test:unit:watch": "node scripts/enforce-pnpm.mjs && tsx --test --watch \"src/**/*.test.ts\"",
+        "test:component": "node scripts/enforce-pnpm.mjs && vitest run",
+        "test:component:watch": "node scripts/enforce-pnpm.mjs && vitest",
+        "test:coverage": "node scripts/enforce-pnpm.mjs && pnpm run test:typecheck && pnpm run test:coverage:unit && pnpm run test:coverage:component",
+        "test:coverage:unit": "node scripts/enforce-pnpm.mjs && c8 pnpm run test:unit",
+        "test:coverage:component": "node scripts/enforce-pnpm.mjs && vitest run --coverage",
         "preview": "node scripts/enforce-pnpm.mjs && vite preview"
     },
     "dependencies": {
         "copy-to-clipboard": "^4.0.2",
         "decimal.js": "^10.6.0",
+        "echarts": "^6.1.0",
         "i18next": "^26.3.6",
         "react": "^19.2.8",
         "react-dom": "^19.2.8",
         "react-i18next": "^17.0.11",
-        "react-router-dom": "^7.18.2"
+        "react-router-dom": "^7.18.2",
+        "socket.io-client": "1.7.4"
     },
     "devDependencies": {
+        "@testing-library/dom": "10.4.1",
+        "@testing-library/jest-dom": "7.0.1",
+        "@testing-library/react": "16.3.3",
+        "@testing-library/user-event": "14.6.7",
         "@types/node": "^24.13.3",
         "@types/react": "^19.2.17",
         "@types/react-dom": "^19.2.3",
         "@vitejs/plugin-react": "^6.0.4",
+        "@vitest/coverage-v8": "5.0.0",
+        "c8": "12.0.0",
         "electron": "^43.4.1",
         "electron-builder": "^26.15.3",
+        "jsdom": "29.1.1",
         "oxlint": "^1.75.0",
         "postcss-scss": "^4.0.9",
         "prettier": "^3.9.6",
@@ -59,6 +76,7 @@
         "stylelint-config-standard-scss": "^17.0.0",
         "tsx": "^4.23.12",
         "typescript": "~6.0.2",
-        "vite": "^8.2.0"
+        "vite": "^8.2.0",
+        "vitest": "5.0.0"
     }
 }

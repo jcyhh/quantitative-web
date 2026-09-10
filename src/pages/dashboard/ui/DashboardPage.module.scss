@@ -81,47 +81,16 @@
     font-size: var(--font-size-caption);
 }
 
-.chartPlaceholder {
-    position: relative;
-    display: flex;
-    height: clamp(210px, 18vw, 260px);
-    align-items: end;
-    justify-content: center;
-    overflow: hidden;
+.chart {
     margin-top: 20px;
-    border-radius: 7px;
-    color: var(--color-text-tertiary);
-    background:
-        repeating-linear-gradient(0deg, transparent, transparent 45px, var(--color-chart-grid) 46px),
-        repeating-linear-gradient(90deg, transparent, transparent 85px, var(--color-chart-grid) 86px);
-    font-size: var(--font-size-caption);
-
-    span {
-        z-index: 1;
-        margin-bottom: 16px;
-        padding: 5px 8px;
-        background: var(--color-surface);
-    }
+    --tld-echart-height: clamp(210px, 18vw, 260px);
 }
 
-.chartLine {
-    position: absolute;
-    inset: 42px 22px 34px;
-    background: linear-gradient(
-        160deg,
-        transparent 0 18%,
-        var(--color-positive) 18.4% 19%,
-        transparent 19.4% 32%,
-        var(--color-positive) 32.4% 33%,
-        transparent 33.4% 46%,
-        var(--color-positive) 46.4% 47%,
-        transparent 47.4% 62%,
-        var(--color-positive) 62.4% 63%,
-        transparent 63.4% 74%,
-        var(--color-positive) 74.4% 75%,
-        transparent 75.4%
-    );
-    opacity: 0.75;
+.chartNote {
+    margin: 8px 0 0;
+    color: var(--color-text-tertiary);
+    font-size: var(--font-size-caption);
+    text-align: center;
 }
 
 .activityList {
@@ -232,5 +201,42 @@
 
     .contentGrid {
         grid-template-columns: 1fr;
+    }
+}
+
+@include mixin.down(mixin.$breakpoint-mobile) {
+    .page {
+        padding: 24px var(--page-gutter) 40px;
+    }
+
+    .pageHeading {
+        flex-direction: column;
+    }
+
+    .primaryButton {
+        width: 100%;
+    }
+
+    .metricsGrid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        margin-top: 22px;
+    }
+
+    .panel {
+        padding: 16px;
+    }
+
+    .panelHeading {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .textButton {
+        align-self: flex-start;
+    }
+
+    .chart {
+        --tld-echart-height: 220px;
     }
 }

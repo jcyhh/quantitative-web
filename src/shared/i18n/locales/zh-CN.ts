@@ -71,7 +71,7 @@ export const zhCN = {
         equityCurve: '权益曲线',
         equityCurveDescription: '组合净值 · 近 30 个交易日',
         viewDetails: '查看详情',
-        chartEmpty: '接入行情服务后展示实时权益曲线',
+        chartPreview: '当前为示例数据，接入行情服务后替换为实时权益曲线',
         activity: '最近动态',
         activityOne: '沪深 300 动量轮动完成今日调仓',
         activityTwo: '中性多因子选股回测任务已完成',

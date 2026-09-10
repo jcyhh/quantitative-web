@@ -1,9 +1,17 @@
 import { projectConstants } from '../constants'
 
 const DEFAULT_API_TIMEOUT = 15_000
+const DEFAULT_SOCKET_CONNECT_TIMEOUT = 10_000
+const DEFAULT_SOCKET_RECONNECT_DELAYS = [5_000, 10_000, 20_000, 30_000, 60_000] as const
 const DEFAULT_TIME_ZONE = 'Asia/Shanghai'
 const supportedLanguages = ['zh-CN', 'en-US'] as const
 type SupportedLanguage = (typeof supportedLanguages)[number]
+const runtimeEnv =
+    (
+        import.meta as ImportMeta & {
+            env?: Record<string, string | undefined>
+        }
+    ).env ?? {}
 
 function getPositiveInteger(value: string | undefined, fallback: number): number {
     const parsedValue = Number(value)
@@ -16,16 +24,22 @@ function getDefaultLanguage(value: string | undefined): SupportedLanguage {
 
 export const sharedConfig = {
     application: {
-        name: import.meta.env.VITE_APP_NAME ?? projectConstants.shortName,
-        mode: import.meta.env.MODE,
-        environment: import.meta.env.VITE_DEPLOY_ENV ?? import.meta.env.MODE,
+        name: runtimeEnv.VITE_APP_NAME ?? projectConstants.shortName,
+        mode: runtimeEnv.MODE,
+        environment: runtimeEnv.VITE_DEPLOY_ENV ?? runtimeEnv.MODE,
     },
     api: {
-        baseUrl: import.meta.env.VITE_API_BASE_URL ?? '/api',
-        timeout: getPositiveInteger(import.meta.env.VITE_API_TIMEOUT, DEFAULT_API_TIMEOUT),
+        baseUrl: runtimeEnv.VITE_API_BASE_URL ?? '/api',
+        timeout: getPositiveInteger(runtimeEnv.VITE_API_TIMEOUT, DEFAULT_API_TIMEOUT),
+    },
+    socket: {
+        ticketPath: '/game-wss/ticket',
+        transport: 'websocket',
+        connectTimeoutMs: DEFAULT_SOCKET_CONNECT_TIMEOUT,
+        reconnectDelaysMs: DEFAULT_SOCKET_RECONNECT_DELAYS,
     },
     locale: {
-        defaultLanguage: getDefaultLanguage(import.meta.env.VITE_DEFAULT_LANGUAGE),
+        defaultLanguage: getDefaultLanguage(runtimeEnv.VITE_DEFAULT_LANGUAGE),
         supportedLanguages,
     },
     time: {

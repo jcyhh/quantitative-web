@@ -1,7 +1,10 @@
-import { useTranslation } from 'react-i18next'
+import { useMemo } from 'react'
 import type { ReactElement } from 'react'
+import { useTranslation } from 'react-i18next'
 import { MetricCard } from '../../../shared/ui/metric-card'
 import { formatCurrency, formatPercent } from '../../../shared/lib/format'
+import { useAppTheme } from '../../../shared/theme'
+import { TldEChart, readEChartCssVariable, type EChartOption } from '../../../shared/ui/tld-echart'
 import styles from './DashboardPage.module.scss'
 
 const strategyRows = [
@@ -10,9 +13,64 @@ const strategyRows = [
     { name: 'CTA 趋势跟踪', statusKey: 'dashboard.paused', returnRate: -0.0113, drawdown: -0.0587 },
 ]
 
+const equityCurveDays = ['07/08', '07/10', '07/12', '07/16', '07/18', '07/22', '07/24']
+const equityCurveValues = [100, 101.4, 100.8, 103.2, 104.6, 106.1, 108.4]
+
+function readChartColor(variableName: string): string {
+    return readEChartCssVariable(variableName) || 'transparent'
+}
+
+function createEquityCurveOption(isDarkTheme: boolean): EChartOption {
+    const lineColor = readChartColor('--color-positive')
+    const gridColor = readChartColor('--color-chart-grid')
+    const textColor = readChartColor('--color-text-secondary')
+    const surfaceColor = readChartColor('--color-surface')
+
+    return {
+        darkMode: isDarkTheme,
+        animation: false,
+        grid: { left: 12, right: 16, top: 16, bottom: 12, containLabel: true },
+        tooltip: {
+            trigger: 'axis',
+            confine: true,
+            backgroundColor: surfaceColor,
+            borderColor: gridColor,
+            textStyle: { color: textColor },
+        },
+        xAxis: {
+            type: 'category',
+            boundaryGap: false,
+            data: equityCurveDays,
+            axisTick: { show: false },
+            axisLine: { lineStyle: { color: gridColor } },
+            axisLabel: { color: textColor, fontSize: 10 },
+        },
+        yAxis: {
+            type: 'value',
+            scale: true,
+            axisTick: { show: false },
+            axisLine: { show: false },
+            axisLabel: { color: textColor, fontSize: 10 },
+            splitLine: { lineStyle: { color: gridColor } },
+        },
+        series: [
+            {
+                type: 'line',
+                data: equityCurveValues,
+                smooth: true,
+                showSymbol: false,
+                lineStyle: { color: lineColor, width: 2 },
+                areaStyle: { color: lineColor, opacity: 0.08 },
+            },
+        ],
+    }
+}
+
 export function DashboardPage(): ReactElement {
     const { t, i18n } = useTranslation()
+    const { theme } = useAppTheme()
     const locale = i18n.resolvedLanguage ?? i18n.language
+    const equityCurveOption = useMemo(() => createEquityCurveOption(theme === 'dark'), [theme])
 
     return (
         <section className={styles.page}>
@@ -57,10 +115,12 @@ export function DashboardPage(): ReactElement {
                             {t('dashboard.viewDetails')}
                         </button>
                     </div>
-                    <div className={styles.chartPlaceholder} role="img" aria-label={t('dashboard.equityCurve')}>
-                        <div className={styles.chartLine} />
-                        <span>{t('dashboard.chartEmpty')}</span>
-                    </div>
+                    <TldEChart
+                        option={equityCurveOption}
+                        className={styles.chart}
+                        ariaLabel={t('dashboard.equityCurve')}
+                    />
+                    <p className={styles.chartNote}>{t('dashboard.chartPreview')}</p>
                 </section>
                 <section className={styles.panel}>
                     <div className={styles.panelHeading}>

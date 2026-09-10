@@ -94,3 +94,9 @@ API_PROXY_TARGET=http://localhost:8080
 ```
 
 前端仍请求 `/api/*`，Vite 开发服务器会代理到该地址，避免浏览器跨域问题。若后端没有 `/api` 前缀，可再在 `vite.config.ts` 中为该服务增加明确的路径重写规则。
+
+## WebSocket 联调
+
+实时连接从 `src/shared/socket` 导入 `socketClient`。客户端先通过当前 API 基址请求 `/game-wss/ticket`，再使用 Ticket 返回的 `websocket_url`、`websocket_path` 和一次性 `ticket` 建立 Socket.IO 1.7.4 WebSocket 连接。
+
+不要在环境文件中配置固定 WSS 地址、Ticket、频道或密钥；连接地址和授权频道必须由后端 Ticket 返回。应用启动时会从 `shared/lib/storage` 的 Access Token 键为 `apiClient` 配置 Bearer Token resolver，Ticket 请求自动复用该认证头。
