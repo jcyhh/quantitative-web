@@ -70,8 +70,9 @@ GitHub Actions 会在推送和 PR 中执行格式检查、lint、分层测试与
 - 多语言：从 `src/shared/i18n` 管理；当前仅支持简体中文与 English，可通过顶栏切换。开发/预发布默认中文，生产默认 English。
 - 公共配置：从 `src/shared/config` 导入，集中维护应用、接口、语言、默认展示时区、分页、本地存储和实时连接默认设置；LocalStorage 从 `src/shared/lib/storage` 统一读写。
 - 项目常量：从 `src/shared/constants` 导入 `projectConstants`，集中维护项目短名、缩写和公共静态资源路径；环境可覆盖的应用名称仍由 `shared/config` 管理。
-- 基础工具：展示数值使用 `src/shared/lib/format`；日期使用 `src/shared/lib/time`；文件下载使用 `src/shared/lib/download`；设备能力使用 `src/shared/lib/device`；位置获取使用 `src/shared/lib/location`；实时连接使用 `src/shared/socket`。不要新建万能 `utils` 目录。
+- 基础工具：展示数值使用 `src/shared/lib/format`；日期使用 `src/shared/lib/time`；文件下载使用 `src/shared/lib/download`；设备能力使用 `src/shared/lib/device`；位置获取使用 `src/shared/lib/location`；高德地图、地址逆解析和导航使用 `src/shared/lib/amap`；实时连接使用 `src/shared/socket`。不要新建万能 `utils` 目录。
 - 图表：从 `src/shared/ui/tld-echart` 使用 `TldEChart`；底层只在共享组件内注册和管理 ECharts，页面负责 option、数据契约和本地化说明。
+- 地图选点：从 `src/shared/ui/tld-amap-picker` 使用 `TldAmapPicker`；Web Key 与安全密钥通过环境配置注入，坐标统一使用 GCJ-02，完整示例见模块 README。
 - 剪贴板：从 `src/shared/lib/clipboard` 使用 `await copyText`；底层固定使用哇学社线上验证过的 `copy-to-clipboard`，调用方按 `Promise<boolean>` 结果自行显示多语言反馈。
 - 通知：从 `src/shared/notification` 导入 `notification`。当前临时使用原生对话框，已预留 `success`、`info`、`warning`、`error`、`confirm` 方法；后续定制通知 UI 只替换内部实现。
 - 精确运算：从 `src/shared/lib/decimal` 使用 `decimalAdd`、`decimalSubtract`、`decimalMultiply`、`decimalDivide`；输入和结果优先使用字符串，业务公式仍留在对应领域模块。

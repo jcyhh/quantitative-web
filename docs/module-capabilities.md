@@ -47,6 +47,7 @@ Hook 是以 `use` 开头的函数，用来封装可复用的 React 状态、生�
 - Sass + CSS Modules：使用 SCSS 编写样式，通过模块作用域避免业务样式互相污染
 - Electron 43 + electron-builder 26：复用同一套 React 渲染层构建桌面端，并负责安装包生成
 - ECharts 6.1：通过 `shared/ui/tld-echart` 提供按需注册的类型化图表组件
+- `@amap/amap-jsapi-loader` 1.0.1：按需加载高德地图 JS API 2.0，由 `shared/lib/amap` 隔离 SDK 与业务代码
 - Feature-Sliced Design：按 `app → pages → widgets → features → entities → shared` 组织模块与依赖方向
 - pnpm 10.28.2 + Node.js 22.22.2+/24.x：固定包管理器和运行时范围，保证本地与 CI 安装结果一致
 - Oxlint + Stylelint + Prettier：分别约束 TypeScript、SCSS 和代码格式，统一使用 4 空格缩进
@@ -81,6 +82,8 @@ Hook 是以 `use` 开头的函数，用来封装可复用的 React 状态、生�
 - 最大分页大小
 - Storage 键名
 - 支持主题和默认主题
+- Socket Ticket 路径、连接超时和重连延迟
+- 高德 Web Key、安全密钥、JS API 版本和导航来源
 - API 超时正整数校验与 fallback
 - 默认语言白名单校验与 fallback
 
@@ -88,6 +91,8 @@ Hook 是以 `use` 开头的函数，用来封装可复用的 React 状态、生�
 sharedConfig.application.name
 sharedConfig.api.baseUrl
 sharedConfig.api.timeout
+sharedConfig.amap.webKey
+sharedConfig.amap.securityJsCode
 sharedConfig.time.defaultTimeZone
 sharedConfig.pagination.defaultPageSize
 sharedConfig.storageKeys.theme
@@ -666,7 +671,7 @@ window.quantLabDesktop.getAppVersion(): Promise<string>
 - 测试源码 strict TypeScript 检查、Node 单测、React 组件测试和分层覆盖率报告
 - GitHub Actions lint、测试覆盖率 artifact、Web 构建和 Electron 编译
 
-当前自动测试覆盖语言 key、剪贴板、十进制运算、普通数值运算、设备判断、下载、位置转换、通知入口、Socket 连接、语言切换组件、ECharts 生命周期和 PNG 资源迁移工具。覆盖率分别输出到 `coverage/unit` 与 `coverage/component`；当前不设置百分比门槛，也不包含真实浏览器 E2E。
+当前自动测试覆盖语言 key、剪贴板、十进制运算、普通数值运算、设备判断、下载、位置转换、高德逆解析/选点/导航、通知入口、Socket 连接、语言切换组件、ECharts 与高德选点组件生命周期和 PNG 资源迁移工具。覆盖率分别输出到 `coverage/unit` 与 `coverage/component`；当前不设置百分比门槛，也不包含真实浏览器 E2E。
 
 ## 22. 位置能力封装
 
@@ -691,9 +696,38 @@ const browserCoordinate = await getCurrentLocation()
 const gcj02Coordinate = await getCurrentLocation({ coordinateSystem: 'gcj02' })
 ```
 
-该模块只处理浏览器定位、坐标校验和坐标转换，不负责权限弹窗、IP 定位、注册归属地、地图 SDK 或业务接口提交；页面应根据 `LocationError.code` 自行提供本地化反馈。完整错误码、定位参数和扩展边界见 [`src/shared/lib/location/README.md`](../src/shared/lib/location/README.md)。
+该模块只处理浏览器定位、坐标校验和坐标转换，不负责权限弹窗、IP 定位、注册归属地、地图 SDK 或业务接口提交；页面应根据 `LocationError.code` 自行提供本地化反馈。完整错误码、定位参数和扩展边界见 [`src/shared/lib/location/README.md`](../src/shared/lib/location/README.md)。地图展示、地址逆解析和导航使用下一节的高德地图公共能力。
 
-## 23. 当前封装边界
+## 23. 高德地图公共能力
+
+核心入口：`src/shared/lib/amap`
+
+React 选点入口：`src/shared/ui/tld-amap-picker`
+
+三方库：`@amap/amap-jsapi-loader@1.0.1`，运行时按需加载高德地图 JS API 2.0
+
+提供：
+
+- `reverseGeocodeAddress`：将 GCJ-02 经纬度解析为格式化地址、省、市、区县、乡镇/街道办、道路、门牌号、行政区划码和城市码。
+- `TldAmapPicker`：展示地图、同步受控坐标、点击移动 Marker，并在逆解析完成后返回完整 `AmapPointSelection`。
+- `buildAmapNavigationUrl`：生成高德官方导航 URI，支持起终点、驾车/公交/步行/骑行、坐标系和调起 App 参数。
+- `openAmapNavigation`：在当前页或新窗口打开导航 URI；默认新窗口并尝试调起高德地图 App。
+- `AmapError`：统一表达配置缺失、SDK 加载、坐标、参数和逆解析错误。
+
+```ts
+import { openAmapNavigation, reverseGeocodeAddress } from 'src/shared/lib/amap'
+
+const coordinate = { longitude: 113.54, latitude: 34.82 }
+const address = await reverseGeocodeAddress(coordinate)
+
+function handleNavigate(): void {
+    openAmapNavigation({ ...coordinate, name: address.formattedAddress })
+}
+```
+
+`VITE_AMAP_WEB_KEY` 和 `VITE_AMAP_SECURITY_JS_CODE` 通过环境配置注入，但两者都会进入浏览器代码，只能使用受部署域名限制的 Web JS API 凭据。业务不得直接导入 Loader、读取 `window.AMap`、处理 SDK 原始响应或自行拼接导航 URL。公共模块、错误码、坐标约束和页面示例分别见 [`src/shared/lib/amap/README.md`](../src/shared/lib/amap/README.md)、[`src/shared/ui/tld-amap-picker/README.md`](../src/shared/ui/tld-amap-picker/README.md) 与 [环境配置](./environment.md#高德地图联调)。
+
+## 24. 当前封装边界
 
 这套模板已经把公共技术入口搭好，但下面这些仍不是已完成功能：
 

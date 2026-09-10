@@ -86,11 +86,14 @@ Vite 会将 `src` 中被 TS/TSX/SCSS **静态引用**的资源加入构建图；
 | 存储         | `shared/lib/storage`   | 受类型约束的 Web Storage 唯一入口。                                                     |
 | 设备能力     | `shared/lib/device`    | PC、平板、H5 分类、浏览器环境判断和原始设备诊断；不负责页面布局或展示文案。             |
 | 位置能力     | `shared/lib/location`  | 浏览器定位、坐标校验和浏览器原始坐标/GCJ-02 转换；不负责权限 UI、IP 定位或地图展示。    |
+| 高德地图     | `shared/lib/amap`      | JS API 按需加载、逆地址解析、地图选点控制器和导航 URI；不承载业务地图状态。             |
 | 剪贴板       | `shared/lib/clipboard` | 基于 `copy-to-clipboard` 的文本复制；不包含 UI 提示。                                   |
 | 通知         | `shared/notification`  | 全局用户反馈入口；当前使用原生对话框，后续承接定制通知 Provider/UI。                    |
 | 下载         | `shared/lib/download`  | Blob 或既有 URL 的浏览器下载。                                                          |
 
 `shared/socket` 是与 `shared/api` 平行的实时连接技术 segment。它只负责 Ticket、Socket.IO 握手、消息解析、状态订阅和连接生命周期；业务事件必须留在所属 feature/entity，不能将 PK 协议堆进共享层。
+
+`shared/ui/tld-amap-picker` 是 `shared/lib/amap` 的 React 适配器，只负责地图容器和选点生命周期。地址确认、表单状态、权限提示和业务提交仍由所属 feature/page 负责。
 
 新增基础函数前先检查已有能力是否覆盖。若属于既有能力，添加到该能力目录；若是第二个可独立演进的概念，创建新能力目录和 `index.ts`，并补充本文档、AI 协作指南与验证记录。领域计算（收益、仓位、指标等）留在 `entities` 或 `features`，不得放进 `shared/lib`；它们可以调用 `shared/lib/decimal`，但必须自行定义单位、精度、舍入与边界。`shared/lib/number` 仅服务 UI 几何和动画等非金融场景，不能作为规避十进制精度约束的入口。
 

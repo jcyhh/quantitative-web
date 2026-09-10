@@ -86,8 +86,9 @@ app → pages → widgets → features → entities → shared
 - 不在前端写入真实密钥、账户、令牌或生产数据。公开给浏览器的环境变量使用 `VITE_` 前缀，并提供 `.env.example` 与 `.env.development.example` 的脱敏示例；真实 `.env.development` 必须忽略且不得提交。
 - 仅可公开给浏览器的数据使用 `VITE_` 前缀；密钥、令牌和内网敏感配置不得进入任何前端环境文件。环境文件与本地代理规则见 [环境配置](./environment.md)。
 - 金额、收益率、日期等展示统一使用 `shared/lib` 中的格式化函数；不要各页自行格式化。展示格式须传入当前语言环境。
-- `shared/lib` 不是万能 `utils`：数值展示只使用 `shared/lib/format`，日期/时间展示只使用 `shared/lib/time`，文件下载只使用 `shared/lib/download`，位置获取只使用 `shared/lib/location`。外部代码只能从各能力的 `index.ts` 导入。
+- `shared/lib` 不是万能 `utils`：数值展示只使用 `shared/lib/format`，日期/时间展示只使用 `shared/lib/time`，文件下载只使用 `shared/lib/download`，位置获取只使用 `shared/lib/location`，高德地图只使用 `shared/lib/amap`。外部代码只能从各能力的 `index.ts` 导入。
 - 位置获取必须显式区分浏览器原始坐标和 GCJ-02 坐标：默认 `getCurrentLocation()` 返回浏览器原始坐标，需要国标坐标时传入 `{ coordinateSystem: 'gcj02' }`；业务模块不得复制 Geolocation API、GCJ-02 算法或权限错误映射。
+- 高德地图、选点和逆地址解析统一使用 GCJ-02 坐标；页面使用 `shared/ui/tld-amap-picker`，业务模块不得直接加载高德 SDK、读取 `window.AMap`、解析 SDK 原始响应或自行拼接导航 URI。`VITE_AMAP_WEB_KEY` 与 `VITE_AMAP_SECURITY_JS_CODE` 是浏览器公开配置，必须使用高德 Web JS API 凭据并限制可用域名，禁止填入服务端秘密。
 - 基础十进制运算只从 `shared/lib/decimal` 导入 `decimalAdd`、`decimalSubtract`、`decimalMultiply`、`decimalDivide`。输入与结果优先用字符串；禁止业务模块直接导入 `decimal.js`，Oxlint 会阻断。该模块固定为 40 位有效数字和 `ROUND_HALF_UP`，除以零会抛错。
 - 任何私有 TypeScript/TSX 文件禁止出现原始 `+`、`-`、`*`、`/`、复合赋值及 `++`/`--`。`pnpm run lint` 的 AST 检查会阻断；加减乘除只能从 `shared/lib/decimal`（金融/业务数据）或 `shared/lib/number`（仅 UI 几何、动画等非金融数据）导入。文本拼接使用模板字符串，不使用 `+`。两个模块自身是唯一实现豁免，禁止扩大豁免范围或跳过脚本。
 - `shared/lib/decimal` 解决 JavaScript 二进制浮点误差，不定义业务口径。收益、回撤、手续费、仓位等公式仍放在所属 `entities` 或 `features`，必须声明单位、精度、舍入、边界并补单元测试。

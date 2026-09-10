@@ -64,20 +64,37 @@ Electron 复用 `dist/production/` 中的 React SPA，并将 `electron/` 编译�
 
 ## 已支持的变量
 
-| 变量                    | 作用                                                                         | 是否进入浏览器 |
-| ----------------------- | ---------------------------------------------------------------------------- | -------------- |
-| `VITE_APP_NAME`         | 产品名称                                                                     | 是             |
-| `VITE_APP_DESCRIPTION`  | 入口页 description                                                           | 是             |
-| `VITE_ROBOTS`           | 入口页 robots 策略；内部系统默认 `noindex,nofollow,noarchive`                | 是             |
-| `VITE_API_BASE_URL`     | API 前缀或公开 API 地址                                                      | 是             |
-| `VITE_API_TIMEOUT`      | 请求超时（毫秒，正整数）                                                     | 是             |
-| `VITE_DEPLOY_ENV`       | 当前 mode 的部署标识：development / staging / production；必须等于 Vite mode | 是             |
-| `VITE_DEFAULT_LANGUAGE` | 首次访问时的默认语言：zh-CN / en-US；按 mode 配置                            | 是             |
-| `API_PROXY_TARGET`      | 本地 Vite 代理目标                                                           | 否             |
+| 变量                         | 作用                                                                         | 是否进入浏览器 |
+| ---------------------------- | ---------------------------------------------------------------------------- | -------------- |
+| `VITE_APP_NAME`              | 产品名称                                                                     | 是             |
+| `VITE_APP_DESCRIPTION`       | 入口页 description                                                           | 是             |
+| `VITE_ROBOTS`                | 入口页 robots 策略；内部系统默认 `noindex,nofollow,noarchive`                | 是             |
+| `VITE_API_BASE_URL`          | API 前缀或公开 API 地址                                                      | 是             |
+| `VITE_API_TIMEOUT`           | 请求超时（毫秒，正整数）                                                     | 是             |
+| `VITE_DEPLOY_ENV`            | 当前 mode 的部署标识：development / staging / production；必须等于 Vite mode | 是             |
+| `VITE_DEFAULT_LANGUAGE`      | 首次访问时的默认语言：zh-CN / en-US；按 mode 配置                            | 是             |
+| `VITE_AMAP_WEB_KEY`          | 高德地图 JS API 2.0 的 Web 端 Key；必须限制可用域名                          | 是             |
+| `VITE_AMAP_SECURITY_JS_CODE` | 高德地图 JS API 的安全密钥；同样会进入浏览器代码                             | 是             |
+| `API_PROXY_TARGET`           | 本地 Vite 代理目标                                                           | 否             |
 
 生产和预发布默认使用同域 `/api` 网关。若部署形态不同，可将 `VITE_API_BASE_URL` 设置为公开 API 地址；不要将密钥、账户、令牌或内网机密放入任何 `VITE_` 变量。
 
 开发与预发布环境默认使用简体中文；生产环境默认使用 English。用户在顶栏手动选择过语言后，本地保存的选择优先于环境默认值。
+
+## 高德地图联调
+
+地图能力从 `src/shared/lib/amap` 使用，React 地图选点从 `src/shared/ui/tld-amap-picker` 使用。SDK 只在首次调用地图能力时加载；未使用地图的页面不会主动请求高德脚本。
+
+在不提交的 `.env.development` 中配置高德 Web 端 JS API 凭据：
+
+```dotenv
+VITE_AMAP_WEB_KEY=replace-with-your-web-js-api-key
+VITE_AMAP_SECURITY_JS_CODE=replace-with-your-js-security-code
+```
+
+`VITE_` 变量会被打包到浏览器代码中，因此这里的 Key 和安全密钥不是服务端秘密。必须在高德控制台为 Web Key 配置允许的开发/预发布/生产域名；不得使用 Web 服务端 Key，也不得提交真实值。较新的高德 Key 还需要配套安全密钥，缺失或域名不匹配会导致 SDK 加载或服务请求失败。
+
+地图 JS API、选点和逆地址解析使用 GCJ-02。若坐标来自浏览器定位，应调用 `getCurrentLocation({ coordinateSystem: 'gcj02' })` 后再传给地图；只有导航 URI 的调用方能通过 `coordinateSystem` 显式声明传入 `gcj02` 或 `wgs84`。真实瓦片、配额、逆解析结果和移动端 App 调起需在目标 HTTPS 环境人工验证。
 
 ## 入口 Meta
 

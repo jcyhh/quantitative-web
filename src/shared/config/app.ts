@@ -22,6 +22,10 @@ function getDefaultLanguage(value: string | undefined): SupportedLanguage {
     return supportedLanguages.includes(value as SupportedLanguage) ? (value as SupportedLanguage) : 'zh-CN'
 }
 
+function getOptionalPublicValue(value: string | undefined): string {
+    return value?.trim() ?? ''
+}
+
 export const sharedConfig = {
     application: {
         name: runtimeEnv.VITE_APP_NAME ?? projectConstants.shortName,
@@ -37,6 +41,12 @@ export const sharedConfig = {
         transport: 'websocket',
         connectTimeoutMs: DEFAULT_SOCKET_CONNECT_TIMEOUT,
         reconnectDelaysMs: DEFAULT_SOCKET_RECONNECT_DELAYS,
+    },
+    amap: {
+        webKey: getOptionalPublicValue(runtimeEnv.VITE_AMAP_WEB_KEY),
+        securityJsCode: getOptionalPublicValue(runtimeEnv.VITE_AMAP_SECURITY_JS_CODE),
+        jsApiVersion: '2.0',
+        navigationSource: projectConstants.shortName,
     },
     locale: {
         defaultLanguage: getDefaultLanguage(runtimeEnv.VITE_DEFAULT_LANGUAGE),

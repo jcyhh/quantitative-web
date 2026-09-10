@@ -1,0 +1,9 @@
+.map-container {
+    width: 100%;
+    height: var(--tld-amap-picker-height, clamp(280px, 50vh, 480px));
+    min-height: 240px;
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+}

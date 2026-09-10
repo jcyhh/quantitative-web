@@ -43,6 +43,7 @@
         "preview": "node scripts/enforce-pnpm.mjs && vite preview"
     },
     "dependencies": {
+        "@amap/amap-jsapi-loader": "1.0.1",
         "copy-to-clipboard": "^4.0.2",
         "decimal.js": "^10.6.0",
         "echarts": "^6.1.0",

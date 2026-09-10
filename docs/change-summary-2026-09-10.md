@@ -1,6 +1,6 @@
 # 2026-09-10 本对话总变更说明
 
-本文汇总本次对话在 `quantitative-web` 中实际落地的代码、配置、测试和文档变更，便于代码评审、交接和现场讲解。内容以提交前暂存区相对基线 `1b1fa0f` 的差异为准；`waxueshe-client-web` 仅作为设备、Socket 和位置能力的参考来源，没有被修改。
+本文汇总本次对话在 `quantitative-web` 中实际落地的代码、配置、测试和文档变更，便于代码评审、交接和现场讲解。设备、响应式、Socket、图表、下载、位置与测试基础设施已包含在提交 `6c997be` 中；后续补充的高德地图能力以当前工作区为准。`waxueshe-client-web` 仅作为设备、Socket 和位置能力的参考来源，没有被修改。
 
 ## 1. 一页总览
 
@@ -12,6 +12,7 @@
 | 图表       | 无统一图表入口             | 增加按需注册、主题化和自动清理的 `TldEChart`              | `src/shared/ui/tld-echart`                             |
 | 下载       | 可内联文件可能被浏览器打开 | Blob 下载统一转附件型 MIME，并保留跨域服务端边界          | `src/shared/lib/download`                              |
 | 定位       | 无公共定位与坐标转换       | 可选择浏览器原始坐标或 GCJ-02，统一错误类型               | `src/shared/lib/location`                              |
+| 高德地图   | 无统一地图入口             | 支持地图选点、地址逆解析和按经纬度打开高德导航            | `src/shared/lib/amap`、`src/shared/ui/tld-amap-picker` |
 | 测试       | 只有 Node `.test.ts`       | Node 单测 + React 组件测试 + 分层覆盖率 + CI artifact     | `vitest.config.ts`、`tsconfig.test.json`、`.c8rc.json` |
 | 文档与规范 | 公共能力说明不完整         | README、开发规范、测试规范、架构说明和 ADR 同步更新       | `README.md`、`docs/`、`AGENTS.md`                      |
 
@@ -157,6 +158,35 @@ const gcj02Coordinate = await getCurrentLocation({ coordinateSystem: 'gcj02' })
 - 不负责权限 UI、地址反解析、地图 SDK、IP fallback 或业务接口提交。
 - 实际浏览器定位通常要求 HTTPS/安全上下文并需要用户授权。
 
+### 6.1 高德地图选点、地址逆解析与导航
+
+新增 `src/shared/lib/amap` 和 React 公共组件 `src/shared/ui/tld-amap-picker`：
+
+- 使用 `@amap/amap-jsapi-loader@1.0.1` 按需加载高德地图 JS API 2.0，未使用地图的页面不会主动加载 SDK；公共层同时兼容其类型声明中的命名导出和实际 CommonJS 默认导出。
+- `TldAmapPicker` 支持受控 GCJ-02 坐标、点击移动 Marker、逆解析后返回坐标与完整地址，并在卸载时销毁地图和监听器。
+- `reverseGeocodeAddress()` 返回格式化地址、国家、省、市、区县、乡镇/街道办、道路、门牌号、行政区划码 `adcode` 和城市码 `citycode`。
+- `buildAmapNavigationUrl()` 与 `openAmapNavigation()` 统一生成并打开高德官方导航 URI，支持驾车、公交、步行、骑行、起点、目标页和 App 调起参数。
+- SDK 原始响应以 `unknown` 进入公共层并执行运行时解析；业务只消费稳定的 `AmapAddress`、`AmapCoordinate` 与 `AmapPointSelection`。
+- Key 缺失、SDK 加载失败、无效坐标、无效参数和逆解析失败统一为 `AmapError`，调用页面根据 `error.code` 提供 i18n 文案。
+
+```tsx
+import type { ReactElement } from 'react'
+import { TldAmapPicker } from 'src/shared/ui/tld-amap-picker'
+
+export function AddressPicker(): ReactElement {
+    return (
+        <TldAmapPicker
+            value={{ longitude: 113.54, latitude: 34.82 }}
+            onChange={(selection) => {
+                // 将 selection 保存到所属业务表单
+            }}
+        />
+    )
+}
+```
+
+环境模板新增 `VITE_AMAP_WEB_KEY` 和 `VITE_AMAP_SECURITY_JS_CODE`。二者都会暴露给浏览器，只能使用受部署域名限制的高德 Web JS API 凭据，不得填写服务端 Key、私钥或其他秘密。浏览器定位传给地图前应显式获取 GCJ-02；导航接口允许调用方声明 GCJ-02 或 WGS-84。
+
 ## 7. 单元测试与覆盖率基础设施
 
 测试采用两层运行环境：
@@ -174,7 +204,8 @@ const gcj02Coordinate = await getCurrentLocation({ coordinateSystem: 'gcj02' })
 - `.c8rc.json`：统计 `.ts` 覆盖率；Vitest V8 provider 统计 `.tsx` 覆盖率。
 - LanguageSwitcher 组件测试：验证语言切换和持久化。
 - TldEChart 组件测试：验证初始化、option 更新、resize 和资源销毁。
-- device、download、location、socket 等公共能力的就近 Node 测试。
+- TldAmapPicker 组件测试：验证选点回调、受控坐标同步和地图销毁。
+- device、download、location、amap、socket 等公共能力的就近 Node 测试。
 - CI 执行覆盖率并上传 `test-coverage` artifact，保留 14 天。
 
 常用命令：
@@ -186,7 +217,7 @@ pnpm run test:component
 pnpm run test:coverage
 ```
 
-本次验证时共有 21 个 Node 测试场景和 2 个 React 组件测试通过。覆盖率只建立事实基线，暂不设置百分比门槛；HTML 报告分别输出到 `coverage/unit` 和 `coverage/component`。
+本次补充地图能力后共有 26 个 Node 测试场景和 3 个 React 组件测试通过。覆盖率只建立事实基线，暂不设置百分比门槛；HTML 报告分别输出到 `coverage/unit` 和 `coverage/component`。
 
 完整规范和新增测试方法见 [`docs/testing-standards.md`](./testing-standards.md) 与 [`docs/decisions/0008-unit-and-component-testing.md`](./decisions/0008-unit-and-component-testing.md)。
 
@@ -196,6 +227,7 @@ pnpm run test:coverage
 
 - `echarts@^6.1.0`：公共图表组件。
 - `socket.io-client@1.7.4`：与现有服务端协议严格保持版本兼容。
+- `@amap/amap-jsapi-loader@1.0.1`：按需加载高德地图 JS API 2.0，不直接暴露给业务模块。
 
 ### 8.2 测试依赖
 
@@ -213,20 +245,22 @@ jsdom 选择 29.1.1，是为了兼容当前开发机 Node 24.12；jsdom 30 对 N
 - 10 秒连接超时。
 - 5s、10s、20s、30s、60s 重连延迟。
 - Access Token storage key。
+- 高德 Web Key、安全密钥、JS API 版本与导航来源。
 
-没有新增 WSS 地址或 Ticket 类 `VITE_*` 变量；连接地址和权限只信任后端 Ticket。
+没有新增 WSS 地址或 Ticket 类 `VITE_*` 变量；连接地址和权限只信任后端 Ticket。新增的 `VITE_AMAP_*` 是浏览器公开配置，真实值只由本地或部署环境注入，并必须限制允许域名。
 
 ## 9. 文档与长期决策
 
 同步更新了以下文档层：
 
 - 根 README：新增公共能力、测试命令、运行时和 CI 说明。
-- 模块能力说明：登记设备、Socket、图表、下载、位置与测试基础设施。
+- 模块能力说明：登记设备、Socket、图表、下载、位置、高德地图与测试基础设施。
 - 开发规范与 AGENTS：Web 响应式范围统一为 PC、平板、H5，Electron 保持桌面端。
 - 环境说明：明确 Socket 不通过环境变量配置固定地址。
 - 测试规范：说明测试分层、命名、Mock、命令、覆盖率和未来 E2E/MSW 边界。
 - ADR 0007：记录 CSS-first 响应式和 Ticket Socket 方向。
 - ADR 0008：记录 Node 单测与 Vitest 组件测试分层。
+- ADR 0009：记录高德地图加载、坐标、环境凭据和公共边界。
 - 各公共能力目录 README：说明职责、入口、约束、扩展点和验证方式。
 
 ## 10. 验证结果
@@ -255,6 +289,7 @@ git diff --check
 - 响应式自动构建已通过，但 320、375、390、430、768、834、1024、1280、1440、1920 等目标视口仍建议在发布前做一次真实浏览器人工回归。
 - 下载公共层无法替代跨域服务端的 `Content-Disposition` 配置。
 - 浏览器定位权限、精度和 Electron renderer 权限仍需在目标运行环境确认。
+- 高德地图真实 Key、域名白名单、配额、地图瓦片、逆解析准确性和移动端 App 调起仍需在目标 HTTPS 环境确认。
 - 最初出现的 GitHub 443 连接超时属于网络连通性问题；本次代码没有修改 Git remote、代理或凭据配置。
 
 ## 12. 建议讲解顺序
@@ -263,5 +298,5 @@ git diff --check
 2. 用响应式断点和 AppLayout 展示 Web PC/平板/H5 的产品范围变化。
 3. 用 Socket Ticket 流程说明安全边界：后端 Ticket 是地址、频道与权限的唯一信任源。
 4. 展示 Dashboard 的真实 ECharts 封装和主题 token 复用。
-5. 展示下载、定位两个浏览器能力如何从页面散装逻辑收敛到 `shared/lib`。
+5. 展示下载、定位和高德地图如何从页面散装逻辑收敛到公共入口，并现场说明 GCJ-02 与公开 Web Key 的边界。
 6. 最后展示测试分层、CI 覆盖率 artifact 和全部验证结果，说明后续业务可以沿公共入口继续扩展。

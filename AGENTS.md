@@ -64,6 +64,8 @@ Hook 不允许集中堆入 `src/hooks`。按 FSD 归属到对应业务 slice 的
 
 `shared/lib` 也不得创建万能 `utils`：数值展示、十进制运算、普通数值运算、时间、存储、下载分别使用 `format`、`decimal`、`number`、`time`、`storage`、`download` 的目录根入口。金融和业务数值的加减乘除必须经 `shared/lib/decimal`，禁止业务模块直接导入 `decimal.js`；输入/输出优先用字符串。`shared/lib/number` 仅限 UI 几何和动画等非金融数值。收益、回撤、手续费、仓位等业务公式仍须按领域明确单位、精度、舍入与边界后留在 `entities` 或 `features`，并补测试。
 
+高德地图能力只从 `shared/lib/amap` 和 `shared/ui/tld-amap-picker` 使用。业务模块禁止直接导入 `@amap/amap-jsapi-loader`、读取 `window.AMap`、解析 SDK 原始响应或自行拼接导航 URI。地图、选点和逆地址解析使用 GCJ-02；浏览器原始定位应先通过 `shared/lib/location` 显式转换。`VITE_AMAP_WEB_KEY` 与 `VITE_AMAP_SECURITY_JS_CODE` 都会暴露给浏览器，只允许配置受部署域名限制的 Web JS API 凭据，不得填入服务端 Key、私钥或其他秘密。
+
 私有 `.ts`/`.tsx` 禁止写原始 `+`、`-`、`*`、`/`、复合赋值、`++`、`--`；`pnpm run lint:arithmetic` 会以 AST 检查阻断。只有 `shared/lib/decimal` 和 `shared/lib/number` 可以实现这些运算，其他模块必须导入对应公共方法；文本拼接改用模板字符串，禁止增加豁免。
 
 复制文本只通过 `shared/lib/clipboard` 的 `await copyText`，底层固定使用哇学社已上线验证的 `copy-to-clipboard`。禁止业务模块直接导入该库或自行调用原生 Clipboard API；调用方根据真实布尔结果显示本地化反馈。
